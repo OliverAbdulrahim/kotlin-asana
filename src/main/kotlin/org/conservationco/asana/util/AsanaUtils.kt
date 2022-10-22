@@ -1,14 +1,30 @@
-package org.conservationco.asana.util
+package org.conservationco.asana
 
-import com.asana.models.CustomField
-import com.asana.models.Resource
-import com.asana.models.Task
+import com.asana.models.*
+import org.conservationco.asana.customfield.getValue
 
-/**
- * @param customFieldName The field to select.
- * @param optionsToSelect The `String` argument(s) containing the names of the `EnumOption` values to assign to the
- *                        specified custom field.
- */
+// asanaContext entrypoint
+
+inline fun asanaContext(config: AsanaConfig = AsanaConfig(), block: AsanaClient.() -> Unit) = block(AsanaClient(config))
+
+// Resource selection functions
+
+fun selectProject(projectGid: String): Project = Project().initResource(projectGid)
+
+fun selectWorkspace(workspaceGid: String): Workspace = Workspace().initResource(workspaceGid)
+
+fun selectTask(taskGid: String): Task = Task().initResource(taskGid)
+
+private fun <T : Resource> T.initResource(gid: String): T = apply { this.gid = gid }
+
+// Collection functions
+
+fun Collection<CustomField>.convertGidsToValues(): Map<String, Any?> = associateBy({ it.gid }, { it.getValue() })
+
+fun Collection<Resource>.gidsForResourceCollection(): Array<String> = map { it.gid }.toTypedArray()
+
+// Task extension functions
+
 fun Task.selectMultiEnumOptions(customFieldName: String, vararg optionsToSelect: String) {
     val customField = this.findCustomField(customFieldName)
     customField!!.multiEnumValues = customField
@@ -16,32 +32,7 @@ fun Task.selectMultiEnumOptions(customFieldName: String, vararg optionsToSelect:
         .filter { optionsToSelect.contains(it.name) }
 }
 
-fun CustomField.addMultiEnumOptions(vararg optionsToSelect: String) {
-    val options = enumOptions.filter { optionsToSelect.contains(it.name) }
-    multiEnumValues.addAll(options)
+fun Task.findCustomField(customFieldName: String): CustomField? = customFields.find { it.name.contains(customFieldName)
 }
 
-fun Task.findCustomField(customFieldName: String): CustomField? = customFields.find { it.name.contains(customFieldName) }
-
-fun gidsForKnownMultiEnum(customField: CustomField): Array<String> {
-    return if (customField.multiEnumValues == null)  arrayOf("")
-    else customField.multiEnumValues.gidsForResourceCollection()
-}
-
-fun Collection<Resource>.gidsForResourceCollection(): Array<String> = map { it.gid }.toTypedArray()
-
-fun modTimeDiffers(first: Task, second: Task): Boolean = first.modifiedAt != second.modifiedAt
-
-fun CustomField.isMultiEnum(): Boolean = this.resourceSubtype == "multi_enum"
-
-fun CustomField.isEnum(): Boolean = this.resourceSubtype == "enum"
-
-fun CustomField.isNumber(): Boolean = this.resourceSubtype == "number"
-
-fun CustomField.isText(): Boolean = this.resourceSubtype == "text" || this.resourceSubtype == "people"
-
-fun Any?.stringValue(): String {
-    if (this is Array<*>) return this.contentToString()
-    val parsed = this.toString()
-    return if (parsed.isEmpty() || parsed == "null") "" else parsed
-}
+fun Task.modTimeDiffers(other: Task): Boolean = modifiedAt != other.modifiedAt

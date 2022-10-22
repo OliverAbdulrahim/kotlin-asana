@@ -13,17 +13,18 @@ API, it covers common use cases and adds useful features that are not implemente
 ## Overview 
 ### This library implements / supports:
 1. Declaratively working with custom fields, tasks, projects, and workspaces.
+2. Automagically handles pagination for you!
 2. Searching for tasks within a workspace or project, with support for filters.
-3. Using projects as data tables, with support for serializing and deserializing Tasks into data objects.
-4. Enforcing best practices for handling your access token.
+4. Enforces best practices for handling your access token.
+3. Using projects as data tables, with support for serializing and deserializing Tasks and their CustomFields into data objects.
 
 ## Examples
 
 ### Using the `asanaContext` entrypoint
-Call the `asanaContext` extension function to start working with Asana from anywhere in your code base! 
-When inside the scope of this function, `this` refers to an `AsanaClient`. This client takes on the default 
-configuration, but you can always provide your own; this is useful if you need to work in different contexts, for 
-example, with multiple access tokens.
+Call the `asanaContext` [top level function](https://kotlinlang.org/docs/functions.html#function-scope) to start working
+with Asana from anywhere in your codebase! When inside the scope of this function, `this` will refer to an 
+`AsanaClient`. This client takes on the default configuration, but you can always provide your own; this is useful if 
+you need to work in different contexts, for example, with multiple access tokens.
 ```
 asanaContext {  < this: AsanaClient > }
 ```
@@ -49,7 +50,7 @@ asanaContext {
    
    // Projects
    val project = selectProject(projectGid = "56789")
-   val tasks: List<Task> = project.getTasks(includeAttachments = true, expanded = true)
+   val tasks: List<Task> = project.getTasks(includeAttachments = true, expanded = true) // pagination is handled for you
    
    // Workspaces
    val workspace = selectWorkspace(workspaceGid = "09876")

@@ -1,6 +1,10 @@
 package org.conservationco.asana
 
-data class AsanaConfig(
-    val accessToken: String = System.getenv("asana_access_token"),
-    val workspaceId: String = System.getenv("workspace_id"),
-)
+import com.asana.Client
+
+class AsanaConfig(
+    accessToken: String = System.getenv("asana_access_token"),
+    var verboseLogs: Boolean = false,
+) {
+    val client: Client = Client.accessToken(accessToken).apply { logAsanaChangeWarnings = verboseLogs }
+}

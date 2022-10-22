@@ -1,159 +1,77 @@
 package org.conservationco.asana
 
-import com.asana.Client
 import com.asana.models.*
 import com.asana.models.Job
-import com.asana.requests.CollectionRequest
-import com.asana.requests.ItemRequest
-import org.conservationco.asana.util.convertGidsToValues
-import java.time.LocalDate
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 class AsanaClient(
-    private val config: AsanaConfig = AsanaConfig()
+    config: AsanaConfig = AsanaConfig(),
 ) {
 
-    private val client: Client = Client.accessToken(config.accessToken)
+    private val requestExecutor = RequestExecutor(config.client)
+    private val requestScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-// Public task functions
+// Task extension functions
 
-    fun getTasks(projectGid: String, includeAttachments: Boolean = false, expanded: Boolean = false): List<Task> {
-        val tasks: List<Task> = getTasksPaginated(projectGid, expanded)
+    fun Task.delete(): Task {
+        return requestExecutor.taskDeleteRequest(this)
+    }
+
+    fun Task.update(): Task {
+        return requestExecutor.taskUpdateRequest(this)
+    }
+
+    fun Task.getAttachments(): Collection<Attachment> {
+        return if (attachments == null) requestExecutor.attachmentGetRequest(this)
+        else attachments
+    }
+
+    fun Task.createAttachment(attachment: Attachment): Attachment {
+        return requestExecutor.attachmentCreateRequest(this, attachment)
+    }
+
+    fun Task.createAttachments(attachments: Collection<Attachment>) {
+        attachments.forEach { createAttachment(it) }
+    }
+
+// Project extension functions
+
+    fun Project.getTasks(includeAttachments: Boolean = false, expanded: Boolean = false): List<Task> {
+        val tasks = requestExecutor.getTasksPaginated(this, expanded)
         if (includeAttachments) {
             tasks
-                .associateBy({ it }, { getAttachments(it.gid) })
+                .associateBy({ it }, { it.getAttachments() })
                 .forEach { it.key.attachments = it.value }
         }
         return tasks
     }
 
-    fun createTask(projectGid: String, task: Task): Task {
-        val created = executeDataRequestWith(
-            taskCreateRequest(),
-            "customFields_fields" to task.customFields.convertGidsToValues(),
-            "name" to task.name,
-        )
-        if (task.attachments != null) {
-            task.attachments.forEach { createAttachment(created.gid, it) }
-        }
+    fun Project.createTask(task: Task): Task {
+        val created = requestExecutor.taskCreateRequest(task)
+        if (task.attachments != null) task.attachments.forEach { created.createAttachment(it) }
         return created
     }
 
-    fun updateTask(task: Task): Task {
-        return executeDataRequestWith(
-            taskUpdateRequest(task),
-            "custom_fields" to task.customFields.convertGidsToValues()
-        )
+    fun Project.getCustomFields(): Collection<CustomField> {
+        return requestExecutor
+            .getCustomFieldSettings(this)
+            .map { it.customField }
     }
 
-    fun deleteTask(taskGid: String): Task {
-        return client.tasks.delete(taskGid).execute()
+// Workspace extension functions
+
+    fun Workspace.search(textQuery: String, vararg projectGids: String = arrayOf("")): List<Task> {
+        return requestExecutor.searchWorkspace(this, textQuery, *projectGids)
     }
 
-// Public attachment functions
-
-    fun getAttachments(taskGid: String): List<Attachment> {
-        return attachmentGetRequest(taskGid)
+    fun Workspace.getAllProjects(includeArchived: Boolean = true): Collection<Project> {
+        return requestExecutor.getAllProjects(this, includeArchived)
     }
 
-    fun createAttachment(taskGid: String, attachment: Attachment): Attachment {
-        val request = client.attachments.createOnTask(
-            taskGid,
-            attachment.downloadUrl.openStream(),
-            attachment.name,
-            attachment.resourceType
-        )
-        return request.execute()
-    }
-
-    fun createAttachments(taskGid: String, attachments: Collection<Attachment>) {
-        attachments.forEach { createAttachment(taskGid, it) }
-    }
-
-// Public search functions
-
-    fun search(textQuery: String, vararg projectGids: String = arrayOf("")): List<Task> {
-        val request = client.tasks.searchInWorkspace(config.workspaceId);
-        request.query["projects="] = projectGids.joinToString(separator = ",")
-        request.query["text="] = textQuery
-        return request.execute()
-    }
-
-    fun customFieldsForProject(projectGid: String): Collection<CustomField> {
-        val request = client.customFieldSettings.findByProject(projectGid)
-        return request.execute().map { it.customField }
-    }
-
-// Workspace related functions
-
-    fun getAllProjects(): MutableList<Project> {
-        return client.projects
-            .getProjectsForWorkspace(config.workspaceId, true)
-            .execute()
-    }
-
-    fun createFromTemplate(projectGid: String, projectTitle: String, projectTeam: String): Job {
-        val request = client.projectTemplates.instantiateProject(projectGid)
-        return executeQueryRequestWith(
-            request,
-            "name" to projectTitle,
-            "team" to projectTeam,
-            "public" to false
-        )
-    }
-
-// Request generating functions
-
-    private fun taskUpdateRequest(task: Task): ItemRequest<Task> {
-        return client.tasks.update(task.gid)
-    }
-
-    private fun taskCreateRequest(): ItemRequest<Task> {
-        return client.tasks.createTask()
-    }
-
-    private fun getTasksPaginated(projectGid: String, expanded: Boolean): List<Task> {
-        val request = client.tasks.getTasksForProject(projectGid, LocalDate.EPOCH.toString())
-        return if (expanded) executeCollectionRequestWith(request, "opt_expand" to ".")
-        else executeCollectionRequestWith(request)
-    }
-
-    private fun attachmentGetRequest(taskGid: String): List<Attachment> {
-        val request = client.attachments.getAttachmentsForObject(taskGid)
-        return executeCollectionRequestWith(request, "opt_expand" to ".")
-    }
-
-// Request execution / pagination handling functions
-
-    private fun <T> executeDataRequestWith(request: ItemRequest<T>, vararg dataParameters: Pair<String, Any>): T {
-        request.data.appendAll(dataParameters)
-        return request.execute()
-    }
-
-    private fun <T> executeQueryRequestWith(request: ItemRequest<T>, vararg queryParameters: Pair<String, Any>): T {
-        request.query.appendAll(queryParameters)
-        return request.execute()
-    }
-
-    private fun <T> executeCollectionRequestWith(
-        request: CollectionRequest<T>,
-        vararg queryParameters: Pair<String, Any>,
-    ): List<T> {
-        request.query.appendAll(queryParameters)
-        return collectPaginations(request)
-    }
-
-    private fun <T> collectPaginations(request: CollectionRequest<T>): List<T> {
-        val result = request.executeRaw()
-        return if (result.nextPage != null) {
-            request.query["offset"] = result.nextPage.offset
-            result.data + collectPaginations(request)
-        } else result.data
-    }
-
-    private fun MutableMap<String, Any>.appendAll(parameters: Array<out Pair<String, Any>>) {
-        parameters.forEach { property ->
-            this[property.first] = property.second
-        }
+    fun Workspace.instantiateTempalte(projectGid: String, projectTitle: String, projectTeam: String): Job {
+        return requestExecutor.instantiateTemplate(projectGid, projectTitle, projectTeam)
     }
 
 }

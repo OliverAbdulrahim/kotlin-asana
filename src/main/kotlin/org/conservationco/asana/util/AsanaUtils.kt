@@ -1,11 +1,13 @@
-package org.conservationco.asana
+package org.conservationco.asana.util
 
 import com.asana.models.*
+import org.conservationco.asana.AsanaClient
+import org.conservationco.asana.AsanaConfig
 import org.conservationco.asana.customfield.getValue
 
 // asanaContext entrypoint
 
-inline fun asanaContext(config: AsanaConfig = AsanaConfig(), block: AsanaClient.() -> Unit) = block(AsanaClient(config))
+inline fun asanaContext(config: AsanaConfig = AsanaConfig(), block: AsanaClient.() -> Unit): AsanaClient = AsanaClient(config).apply(block)
 
 // Resource selection functions
 

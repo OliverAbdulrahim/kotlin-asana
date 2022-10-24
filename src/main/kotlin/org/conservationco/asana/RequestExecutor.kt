@@ -4,6 +4,7 @@ import com.asana.Client
 import com.asana.models.*
 import com.asana.requests.CollectionRequest
 import com.asana.requests.ItemRequest
+import org.conservationco.asana.customfield.context.TaskCustomFieldContext
 import org.conservationco.asana.util.appendAll
 import org.conservationco.asana.util.mapGidsToValues
 import java.time.LocalDate
@@ -21,7 +22,7 @@ class RequestExecutor(
         val request = client.tasks.update(task.gid)
         return executeDataRequestWith(
             request,
-            "custom_fields" to task.customFields.mapGidsToValues()
+            "custom_fields" to task.customFields.mapGidsToValues(TaskCustomFieldContext(task))
         )
     }
 
@@ -29,7 +30,7 @@ class RequestExecutor(
         val request = client.tasks.createTask()
         return executeDataRequestWith(
             request,
-            "customFields_fields" to task.customFields.mapGidsToValues(),
+            "customFields_fields" to task.customFields.mapGidsToValues(TaskCustomFieldContext(task)),
             "name" to task.name,
         )
     }

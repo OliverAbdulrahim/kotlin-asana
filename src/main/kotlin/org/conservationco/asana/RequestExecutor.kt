@@ -88,17 +88,17 @@ class RequestExecutor(
 
 // Request execution / pagination handling functions
 
-    fun <T> executeDataRequestWith(request: ItemRequest<T>, vararg dataParameters: Pair<String, Any>): T {
+    private fun <T> executeDataRequestWith(request: ItemRequest<T>, vararg dataParameters: Pair<String, Any>): T {
         request.data.appendAll(dataParameters)
         return request.execute()
     }
 
-    fun <T> executeQueryRequestWith(request: ItemRequest<T>, vararg queryParameters: Pair<String, Any>): T {
+    private fun <T> executeQueryRequestWith(request: ItemRequest<T>, vararg queryParameters: Pair<String, Any>): T {
         request.query.appendAll(queryParameters)
         return request.execute()
     }
 
-    fun <T> executeCollectionRequestWith(
+    private fun <T> executeCollectionRequestWith(
         request: CollectionRequest<T>,
         vararg queryParameters: Pair<String, Any>,
     ): List<T> {
@@ -106,7 +106,7 @@ class RequestExecutor(
         return collectPaginations(request)
     }
 
-    fun <T> collectPaginations(request: CollectionRequest<T>): List<T> {
+    private fun <T> collectPaginations(request: CollectionRequest<T>): List<T> {
         val result = request.executeRaw()
         return if (result.nextPage != null) {
             request.query["offset"] = result.nextPage.offset

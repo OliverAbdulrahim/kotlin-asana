@@ -86,6 +86,11 @@ class RequestExecutor(
         )
     }
 
+    fun getCustomFields(workspace: Workspace): List<CustomField> {
+        val request = client.customFields.getCustomFieldsForWorkspace(workspace.gid)
+        return collectPaginations(request)
+    }
+
 // Request execution / pagination handling functions
 
     private fun <T> executeDataRequestWith(request: ItemRequest<T>, vararg dataParameters: Pair<String, Any>): T {

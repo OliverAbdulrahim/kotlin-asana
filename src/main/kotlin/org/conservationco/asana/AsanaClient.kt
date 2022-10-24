@@ -1,17 +1,12 @@
 package org.conservationco.asana
 
 import com.asana.models.*
-import com.asana.models.Job
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 
 class AsanaClient(
     config: AsanaConfig = AsanaConfig(),
 ) {
 
     private val requestExecutor = RequestExecutor(config.client)
-    private val requestScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
 // Task extension functions
 
@@ -72,6 +67,10 @@ class AsanaClient(
 
     fun Workspace.instantiateTempalte(projectGid: String, projectTitle: String, projectTeam: String): Job {
         return requestExecutor.instantiateTemplate(projectGid, projectTitle, projectTeam)
+    }
+
+    fun Workspace.getCustomFields(): Collection<CustomField> {
+        return requestExecutor.getCustomFields(this)
     }
 
 }

@@ -3,11 +3,11 @@ package org.conservationco.asana.util
 import com.asana.models.*
 import org.conservationco.asana.AsanaClient
 import org.conservationco.asana.AsanaConfig
-import org.conservationco.asana.customfield.getValue
+import org.conservationco.asana.customfield.context.CustomFieldContext
 
 // asanaContext entrypoint
 
-inline fun asanaContext(config: AsanaConfig = AsanaConfig(), block: AsanaClient.() -> Unit): AsanaClient = AsanaClient(config).apply(block)
+inline fun <R> asanaContext(config: AsanaConfig = AsanaConfig(), block: AsanaClient.() -> R): R = AsanaClient(config).block()
 
 // Resource selection functions
 
@@ -21,20 +21,8 @@ private fun <T : Resource> T.initResource(gid: String): T = apply { this.gid = g
 
 // Collection functions
 
-fun Collection<CustomField>.convertGidsToValues(): Map<String, Any?> = associateBy({ it.gid }, { it.getValue() })
-
-fun Collection<Resource>.gidsForResourceCollection(): Array<String> = map { it.gid }.toTypedArray()
-
-// Task extension functions
-
-fun Task.selectMultiEnumOptions(customFieldName: String, vararg optionsToSelect: String) {
-    val customField = this.findCustomField(customFieldName)
-    customField!!.multiEnumValues = customField
-        .enumOptions
-        .filter { optionsToSelect.contains(it.name) }
+fun Collection<CustomField>.mapGidsToValues(context: CustomFieldContext): Map<String, Any?> {
+    return associateBy({ it.gid }, { it.inferValue(context) })
 }
 
-fun Task.findCustomField(customFieldName: String): CustomField? = customFields.find { it.name.contains(customFieldName)
-}
-
-fun Task.modTimeDiffers(other: Task): Boolean = modifiedAt != other.modifiedAt
+fun Collection<Resource>.toGidArray(): Array<String> = map { it.gid }.toTypedArray()

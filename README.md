@@ -4,16 +4,17 @@ and fun to use!
 
 While `kotlin-asana` does not exhaustively implement all endpoints of the Asana REST API, it covers common use cases (at
 least those at our organization!). We've implemented useful features extending `java-asana`'s functionality, such as 
-working with project templates, custom field operations, easy pagination handling, and more. Essentially, this library
-handles the intricacies of making your API calls work properly, so you can focus on writing your business logic! 
+serializing Tasks into your own custom data objects (and back into Tasks again!), custom field operations, automatic 
+pagination handling, project templates, and more. Essentially, this library handles the intricacies of making your API 
+calls work properly, so you can focus on writing your business logic! 
 
 Read on to learn more and find examples.
 
 ## Jump to a section
-1. [Overview of features](#overview)
+1. [Overview of features](#overview-of-features)
 2. [Installation (with Maven)](#installation-with-maven)
-    * [Add this project as a dependency](#add-this-project-as-a-dependency)
-    * [Add JitPack as a repository](#add-jitpack-as-a-repository)
+   1. [Add this project as a dependency](#add-this-project-as-a-dependency)
+   2. [Add JitPack as a repository](#add-jitpack-as-a-repository)
 3. [Setup](#setup)
    * [Supplying your access token](#supplying-your-access-token)
 4. [Usage examples](#usage-examples)
@@ -23,11 +24,11 @@ Read on to learn more and find examples.
 
 ## Overview of features 
 ### This library implements / supports:
-1. Declaratively working with custom fields, tasks, projects, and workspaces.
+1. Support for serializing and deserializing Tasks and their CustomFields into data objects.
 2. Automagically handles pagination, passing query parameters, and other intricate setup work for you!
-3. Searching for tasks within a workspace or project, with support for filters.
-4. Enforces best practices for handling your access token.
-5. Using projects as data tables, with support for serializing and deserializing Tasks and their CustomFields into data objects.
+3. Declaratively working with custom fields, tasks, projects, and workspaces.
+4. Searching for tasks within a workspace or project, with support for filters.
+5. Enforces best practices for handling your access token.
 
 ## Installation (with Maven) 
 ### Add this project as a dependency
@@ -51,14 +52,14 @@ You'll also want to make sure that you have the [JitPack](https://jitpack.io/) r
 
 ## Setup
 ### Supplying your access token
-For autowired setup of your access token, supply the `asana_access_token` environment variable wherever you use 
-`kotlin-asana`.
+_Recommended method:_ for autowired setup of your access token, supply the `asana_access_token` environment variable 
+wherever you use `kotlin-asana`.
 
 ```
 java -jar <your app name>.jar asana_access_token=<your access token>
 ```
 
-If you store your access token some other way, instantiate `AsanaConfig` object and [pass that into your calls to 
+_Not recommended:_ If you store your access token some other way, instantiate an `AsanaConfig` object and [pass that into your calls to 
 `asanaContext`](#supply-a-configuration-to-asanacontext-optional).
 ```
 val config = AsanaConfig("your access token")

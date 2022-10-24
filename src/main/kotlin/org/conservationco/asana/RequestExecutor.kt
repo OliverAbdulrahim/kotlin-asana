@@ -4,9 +4,8 @@ import com.asana.Client
 import com.asana.models.*
 import com.asana.requests.CollectionRequest
 import com.asana.requests.ItemRequest
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import org.conservationco.asana.util.appendAll
+import org.conservationco.asana.util.mapGidsToValues
 import java.time.LocalDate
 
 class RequestExecutor(
@@ -14,20 +13,23 @@ class RequestExecutor(
 ) {
 
     fun taskDeleteRequest(task: Task): Task {
-        return client.tasks.delete(task.gid).execute()
+        val request = client.tasks.delete(task.gid)
+        return request.execute()
     }
 
     fun taskUpdateRequest(task: Task): Task {
+        val request = client.tasks.update(task.gid)
         return executeDataRequestWith(
-            client.tasks.update(task.gid),
-            "custom_fields" to task.customFields.convertGidsToValues()
+            request,
+            "custom_fields" to task.customFields.mapGidsToValues()
         )
     }
 
     fun taskCreateRequest(task: Task): Task {
+        val request = client.tasks.createTask()
         return executeDataRequestWith(
-            client.tasks.createTask(),
-            "customFields_fields" to task.customFields.convertGidsToValues(),
+            request,
+            "customFields_fields" to task.customFields.mapGidsToValues(),
             "name" to task.name,
         )
     }
@@ -38,12 +40,13 @@ class RequestExecutor(
     }
 
     fun attachmentCreateRequest(task: Task, attachment: Attachment): Attachment {
-        return client.attachments.createOnTask(
+        val request = client.attachments.createOnTask(
             task.gid,
             attachment.downloadUrl.openStream(),
             attachment.name,
             attachment.resourceType
-        ).execute()
+        )
+        return request.execute()
     }
 
     fun getTasksPaginated(project: Project, expanded: Boolean): List<Task> {
@@ -53,7 +56,8 @@ class RequestExecutor(
     }
 
     fun getCustomFieldSettings(project: Project): MutableList<CustomFieldSetting> {
-        return client.customFieldSettings.findByProject(project.gid).execute()
+        val request = client.customFieldSettings.findByProject(project.gid)
+        return request.execute()
     }
 
     fun searchWorkspace(
@@ -68,9 +72,8 @@ class RequestExecutor(
     }
 
     fun getAllProjects(workspace: Workspace, includeArchived: Boolean): Collection<Project> {
-        return client.projects
-            .getProjectsForWorkspace(workspace.gid, includeArchived)
-            .execute()
+        val request = client.projects.getProjectsForWorkspace(workspace.gid, includeArchived)
+        return request.execute()
     }
 
     fun instantiateTemplate(projectGid: String, projectTitle: String, projectTeam: String): Job {
@@ -109,12 +112,6 @@ class RequestExecutor(
             request.query["offset"] = result.nextPage.offset
             result.data + collectPaginations(request)
         } else result.data
-    }
-
-    fun MutableMap<String, Any>.appendAll(parameters: Array<out Pair<String, Any>>) {
-        parameters.forEach { property ->
-            this[property.first] = property.second
-        }
     }
 
 }

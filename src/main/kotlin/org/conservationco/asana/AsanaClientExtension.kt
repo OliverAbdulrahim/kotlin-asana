@@ -75,7 +75,7 @@ class AsanaClientExtension(config: AsanaConfig) {
         return requestExecutor.getProjectsPaginated(this, includeArchived)
     }
 
-    fun Workspace.instantiateTempalte(projectGid: String, projectTitle: String, projectTeam: String): Job {
+    fun Workspace.instantiateTemplate(projectGid: String, projectTitle: String, projectTeam: String): Job {
         return requestExecutor.instantiateTemplate(projectGid, projectTitle, projectTeam)
     }
 

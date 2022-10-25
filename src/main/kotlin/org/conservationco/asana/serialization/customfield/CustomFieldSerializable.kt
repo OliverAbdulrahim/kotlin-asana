@@ -1,4 +1,4 @@
-package org.conservationco.asana.customfield
+package org.conservationco.asana.serialization.customfield
 
 
 @Target(AnnotationTarget.PROPERTY)

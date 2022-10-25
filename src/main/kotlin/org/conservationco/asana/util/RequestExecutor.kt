@@ -1,17 +1,19 @@
-package org.conservationco.asana
+package org.conservationco.asana.util
 
-import com.asana.Client
 import com.asana.models.*
 import com.asana.requests.CollectionRequest
 import com.asana.requests.ItemRequest
-import org.conservationco.asana.customfield.context.TaskCustomFieldContext
-import org.conservationco.asana.util.appendAll
-import org.conservationco.asana.util.mapGidsToValues
+import org.conservationco.asana.AsanaConfig
+import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
+import org.conservationco.asana.serialization.customfield.context.NoOpCustomFieldContext
+import org.conservationco.asana.serialization.customfield.context.TaskCustomFieldContext
 import java.time.LocalDate
 
 class RequestExecutor(
-    private val client: Client,
+    private val config: AsanaConfig,
 ) {
+
+    private val client = config.client
 
     fun taskDeleteRequest(task: Task): Task {
         val request = client.tasks.delete(task.gid)
@@ -22,7 +24,7 @@ class RequestExecutor(
         val request = client.tasks.update(task.gid)
         return executeDataRequestWith(
             request,
-            "custom_fields" to task.customFields.mapGidsToValues(TaskCustomFieldContext(task))
+            "custom_fields" to task.customFields.mapGidsToValues(decideContextFor(task))
         )
     }
 
@@ -30,7 +32,7 @@ class RequestExecutor(
         val request = client.tasks.createTask()
         return executeDataRequestWith(
             request,
-            "customFields_fields" to task.customFields.mapGidsToValues(TaskCustomFieldContext(task)),
+            "customFields_fields" to task.customFields.mapGidsToValues(decideContextFor(task)),
             "name" to task.name,
         )
     }
@@ -118,6 +120,10 @@ class RequestExecutor(
             request.query["offset"] = result.nextPage.offset
             result.data + collectPaginations(request)
         } else result.data
+    }
+
+    private fun decideContextFor(task: Task): CustomFieldContext {
+        return if (config.context is NoOpCustomFieldContext) TaskCustomFieldContext(task) else config.context
     }
 
 }

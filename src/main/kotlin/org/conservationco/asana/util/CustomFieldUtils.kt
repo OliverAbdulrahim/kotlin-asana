@@ -1,18 +1,15 @@
 package org.conservationco.asana.util
 
 import com.asana.models.CustomField
-import org.conservationco.asana.customfield.ResourceSubtype
-import org.conservationco.asana.customfield.context.CustomFieldContext
+import org.conservationco.asana.serialization.customfield.ResourceSubtype
+import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
 
 fun CustomField.addMultiEnumOptions(vararg optionsToSelect: String) {
     val options = enumOptions.filter { optionsToSelect.contains(it.name) }
     multiEnumValues.addAll(options)
 }
 
-fun CustomField.multiEnumToGids(): Array<String> {
-    return if (multiEnumValues == null)  arrayOf("")
-    else multiEnumValues.toGidArray()
-}
+fun CustomField.multiEnumToGids(): Array<String> = if (multiEnumValues == null) arrayOf("") else multiEnumValues.toGidArray()
 
 fun CustomField.isMultiEnum(): Boolean = this.resourceSubtype == "multi_enum"
 

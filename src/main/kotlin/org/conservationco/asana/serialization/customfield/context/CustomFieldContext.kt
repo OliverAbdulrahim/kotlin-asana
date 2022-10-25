@@ -1,4 +1,4 @@
-package org.conservationco.asana.customfield.context
+package org.conservationco.asana.serialization.customfield.context
 
 import com.asana.models.CustomField
 import org.conservationco.asana.util.isEnum

@@ -5,8 +5,8 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
-fun Any.setProperty(property: KProperty1<out Any, *>?, value: Any?) {
-    if (property is KMutableProperty<*>) property.setter.call(this, value)
+fun setProperty(obj: Any, property: KProperty1<out Any, *>?, value: Any?) {
+    if (property is KMutableProperty<*>) property.setter.call(obj, value)
 }
 
 fun getProperty(target: Any, propertyName: String): Any? {

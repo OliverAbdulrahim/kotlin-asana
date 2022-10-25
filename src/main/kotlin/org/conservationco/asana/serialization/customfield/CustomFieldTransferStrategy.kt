@@ -1,4 +1,4 @@
-package org.conservationco.asana.customfield
+package org.conservationco.asana.serialization.customfield
 
 import org.conservationco.asana.util.associateByNotNull
 import kotlin.reflect.KClass

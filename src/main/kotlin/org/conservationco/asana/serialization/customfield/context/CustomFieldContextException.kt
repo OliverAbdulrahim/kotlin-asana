@@ -1,4 +1,4 @@
-package org.conservationco.asana.customfield.context
+package org.conservationco.asana.serialization.customfield.context
 
 import java.lang.IllegalArgumentException
 

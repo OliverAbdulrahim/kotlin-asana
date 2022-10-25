@@ -1,8 +1,8 @@
-package org.conservationco.asana.customfield
+package org.conservationco.asana.serialization.customfield
 
 import com.asana.models.CustomField
-import org.conservationco.asana.customfield.context.CustomFieldContext
-import org.conservationco.asana.customfield.context.NoOpCustomFieldContext
+import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
+import org.conservationco.asana.serialization.customfield.context.NoOpCustomFieldContext
 import org.conservationco.asana.util.camelToSnakeCase
 import org.conservationco.asana.util.multiEnumToGids
 import org.conservationco.asana.util.stringValue

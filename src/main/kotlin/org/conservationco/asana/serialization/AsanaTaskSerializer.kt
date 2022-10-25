@@ -2,12 +2,12 @@ package org.conservationco.asana.serialization
 
 import com.asana.models.CustomField
 import com.asana.models.Task
-import org.conservationco.asana.customfield.CustomFieldSerializable
-import org.conservationco.asana.customfield.CustomFieldTransferStrategy
-import org.conservationco.asana.customfield.context.CustomFieldContext
-import org.conservationco.asana.util.asResourceSubtype
-import org.conservationco.asana.util.inferValue
-import org.conservationco.asana.util.setProperty
+import org.conservationco.asana.serialization.customfield.CustomFieldSerializable
+import org.conservationco.asana.serialization.customfield.CustomFieldTransferStrategy
+import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
+import org.conservationco.asana.serialization.customfield.context.CustomFieldContextException
+import org.conservationco.asana.serialization.customfield.context.NoOpCustomFieldContext
+import org.conservationco.asana.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.createInstance
@@ -19,6 +19,15 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
 ) : AsanaSerializer<Task, T> {
 
     private val strategy = CustomFieldTransferStrategy(`class`)
+
+    init {
+        if (context is NoOpCustomFieldContext) throw CustomFieldContextException(
+            """
+                The given context [$context] cannot be used to serialize tasks and data objects.
+                 You must supply a valid CustomFieldContext to be able to serialize ${`class`.qualifiedName}."
+            """.trimIndent()
+        )
+    }
 
     override fun serialize(source: T, alsoApply: Task.(source: T) -> Task): Task {
         val destination = Task().apply {
@@ -33,7 +42,7 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
         val destination: T = `class`.createInstance()
         source.customFields.forEach {
             val property = strategy[it.name]
-            if (property != null) destination.setProperty(property, it.inferValue(context))
+            if (property != null) setProperty(destination, property, it.inferValue(context))
         }
         return destination
             .apply { this.id = source.gid }

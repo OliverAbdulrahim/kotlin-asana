@@ -1,12 +1,17 @@
 package org.conservationco.asana
 
 import com.asana.models.*
+import org.conservationco.asana.util.RequestExecutor
 
-class AsanaClient(
-    config: AsanaConfig = AsanaConfig(),
-) {
+// asanaContext entrypoint
+inline fun <R> asanaContext(
+    client: AsanaClientExtension = AsanaClientExtension(),
+    block: AsanaClientExtension.() -> R
+): R = client.block()
 
-    private val requestExecutor = RequestExecutor(config.client)
+class AsanaClientExtension(config: AsanaConfig = AsanaConfig()) {
+
+    private val requestExecutor = RequestExecutor(config)
 
 // Task extension functions
 

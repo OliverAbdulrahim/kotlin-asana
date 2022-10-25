@@ -15,12 +15,12 @@ class RequestExecutor(
 
     private val client = config.client
 
-    fun taskDeleteRequest(task: Task): Task {
+    fun deleteTask(task: Task): Task {
         val request = client.tasks.delete(task.gid)
         return request.execute()
     }
 
-    fun taskUpdateRequest(task: Task): Task {
+    fun updateTask(task: Task): Task {
         val request = client.tasks.update(task.gid)
         return executeDataRequestWith(
             request,
@@ -28,7 +28,7 @@ class RequestExecutor(
         )
     }
 
-    fun taskCreateRequest(task: Task): Task {
+    fun createTask(task: Task): Task {
         val request = client.tasks.createTask()
         return executeDataRequestWith(
             request,
@@ -37,12 +37,12 @@ class RequestExecutor(
         )
     }
 
-    fun attachmentGetRequest(task: Task): Collection<Attachment> {
+    fun getAttachment(task: Task): Collection<Attachment> {
         val request = client.attachments.getAttachmentsForObject(task.gid)
         return executeCollectionRequestWith(request, "opt_expand" to ".")
     }
 
-    fun attachmentCreateRequest(task: Task, attachment: Attachment): Attachment {
+    fun createAttachment(task: Task, attachment: Attachment): Attachment {
         val request = client.attachments.createOnTask(
             task.gid,
             attachment.downloadUrl.openStream(),

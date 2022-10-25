@@ -21,20 +21,20 @@ class AsanaClientExtension(config: AsanaConfig) {
 // Task extension functions
 
     fun Task.delete(): Task {
-        return requestExecutor.taskDeleteRequest(this)
+        return requestExecutor.deleteTask(this)
     }
 
     fun Task.update(): Task {
-        return requestExecutor.taskUpdateRequest(this)
+        return requestExecutor.updateTask(this)
     }
 
     fun Task.getAttachments(): Collection<Attachment> {
-        return if (attachments == null) requestExecutor.attachmentGetRequest(this)
+        return if (attachments == null) requestExecutor.getAttachment(this)
         else attachments
     }
 
     fun Task.createAttachment(attachment: Attachment): Attachment {
-        return requestExecutor.attachmentCreateRequest(this, attachment)
+        return requestExecutor.createAttachment(this, attachment)
     }
 
     fun Task.createAttachments(attachments: Collection<Attachment>) {
@@ -54,7 +54,7 @@ class AsanaClientExtension(config: AsanaConfig) {
     }
 
     fun Project.createTask(task: Task): Task {
-        val created = requestExecutor.taskCreateRequest(task)
+        val created = requestExecutor.createTask(task)
         if (task.attachments != null) task.attachments.forEach { created.createAttachment(it) }
         return created
     }

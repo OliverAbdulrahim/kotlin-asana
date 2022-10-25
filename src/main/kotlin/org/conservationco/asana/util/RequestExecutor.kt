@@ -39,7 +39,7 @@ class RequestExecutor(
 
     fun getAttachment(task: Task): Collection<Attachment> {
         val request = client.attachments.getAttachmentsForObject(task.gid)
-        return executeCollectionRequestWith(request, "opt_expand" to ".")
+        return executeWithAndPaginate(request, "opt_expand" to ".")
     }
 
     fun createAttachment(task: Task, attachment: Attachment): Attachment {
@@ -54,16 +54,16 @@ class RequestExecutor(
 
     fun getTasksPaginated(project: Project, expanded: Boolean): List<Task> {
         val request = client.tasks.getTasksForProject(project.gid, LocalDate.EPOCH.toString())
-        return if (expanded) executeCollectionRequestWith(request, "opt_expand" to ".")
-        else executeCollectionRequestWith(request)
+        return if (expanded) executeWithAndPaginate(request, "opt_expand" to ".")
+        else executeWithAndPaginate(request)
     }
 
-    fun getCustomFieldSettings(project: Project): MutableList<CustomFieldSetting> {
+    fun getCustomFieldSettingsPaginated(project: Project): List<CustomFieldSetting> {
         val request = client.customFieldSettings.findByProject(project.gid)
-        return request.execute()
+        return collectPaginations(request)
     }
 
-    fun searchWorkspace(
+    fun searchWorkspacePaginated(
         workspace: Workspace,
         textQuery: String,
         vararg projectGids: String
@@ -71,12 +71,12 @@ class RequestExecutor(
         val request = client.tasks.searchInWorkspace(workspace.gid);
         request.query["projects="] = projectGids.joinToString(separator = ",")
         request.query["text="] = textQuery
-        return request.execute()
+        return collectPaginations(request)
     }
 
-    fun getAllProjects(workspace: Workspace, includeArchived: Boolean): Collection<Project> {
+    fun getProjectsPaginated(workspace: Workspace, includeArchived: Boolean): Collection<Project> {
         val request = client.projects.getProjectsForWorkspace(workspace.gid, includeArchived)
-        return request.execute()
+        return collectPaginations(request)
     }
 
     fun instantiateTemplate(projectGid: String, projectTitle: String, projectTeam: String): Job {
@@ -89,7 +89,7 @@ class RequestExecutor(
         )
     }
 
-    fun getCustomFields(workspace: Workspace): List<CustomField> {
+    fun getCustomFieldsPaginated(workspace: Workspace): List<CustomField> {
         val request = client.customFields.getCustomFieldsForWorkspace(workspace.gid)
         return collectPaginations(request)
     }
@@ -106,7 +106,7 @@ class RequestExecutor(
         return request.execute()
     }
 
-    private fun <T> executeCollectionRequestWith(
+    private fun <T> executeWithAndPaginate(
         request: CollectionRequest<T>,
         vararg queryParameters: Pair<String, Any>,
     ): List<T> {

@@ -61,18 +61,18 @@ class AsanaClientExtension(config: AsanaConfig) {
 
     fun Project.getCustomFields(): Collection<CustomField> {
         return requestExecutor
-            .getCustomFieldSettings(this)
+            .getCustomFieldSettingsPaginated(this)
             .map { it.customField }
     }
 
 // Workspace extension functions
 
     fun Workspace.search(textQuery: String, vararg projectGids: String = arrayOf("")): List<Task> {
-        return requestExecutor.searchWorkspace(this, textQuery, *projectGids)
+        return requestExecutor.searchWorkspacePaginated(this, textQuery, *projectGids)
     }
 
     fun Workspace.getAllProjects(includeArchived: Boolean = true): Collection<Project> {
-        return requestExecutor.getAllProjects(this, includeArchived)
+        return requestExecutor.getProjectsPaginated(this, includeArchived)
     }
 
     fun Workspace.instantiateTempalte(projectGid: String, projectTitle: String, projectTeam: String): Job {
@@ -80,7 +80,7 @@ class AsanaClientExtension(config: AsanaConfig) {
     }
 
     fun Workspace.getCustomFields(): Collection<CustomField> {
-        return requestExecutor.getCustomFields(this)
+        return requestExecutor.getCustomFieldsPaginated(this)
     }
 
 }

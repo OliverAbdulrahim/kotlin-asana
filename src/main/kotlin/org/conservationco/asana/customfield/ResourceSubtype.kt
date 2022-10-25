@@ -9,7 +9,7 @@ import org.conservationco.asana.util.stringValue
 import kotlin.reflect.full.primaryConstructor
 
 sealed class ResourceSubtype (
-    protected val context: CustomFieldContext = NoOpCustomFieldContext(),
+    protected val context: CustomFieldContext = NoOpCustomFieldContext,
 ) {
 
     companion object {

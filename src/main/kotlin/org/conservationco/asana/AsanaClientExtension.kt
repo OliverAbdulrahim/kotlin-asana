@@ -5,15 +5,15 @@ import org.conservationco.asana.util.RequestExecutor
 
 // asanaContext entrypoint
 inline fun <R> asanaContext(
-    client: AsanaClientExtension = AsanaClientExtension.Defaults.CLIENT.value,
+    client: AsanaClientExtension = AsanaClientExtension.Defaults.CLIENT,
     block: AsanaClientExtension.() -> R
 ): R = client.block()
 
 class AsanaClientExtension(config: AsanaConfig) {
 
     object Defaults {
-        val CONFIG = lazy { AsanaConfig() }
-        val CLIENT = lazy { AsanaClientExtension(CONFIG.value) }
+        val CONFIG by lazy { AsanaConfig() }
+        val CLIENT by lazy { AsanaClientExtension(CONFIG) }
     }
 
     private val requestExecutor = RequestExecutor(config)

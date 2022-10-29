@@ -1,6 +1,7 @@
 package org.conservationco.asana.util
 
 import com.asana.models.CustomField
+import com.asana.models.Resource
 import org.conservationco.asana.serialization.customfield.ResourceSubtype
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
 
@@ -34,3 +35,10 @@ fun CustomField.asResourceSubtype(context: CustomFieldContext): ResourceSubtype 
     return if (typeConstructor.parameters.isEmpty()) typeConstructor.call()
     else typeConstructor.call(context)
 }
+
+// Collection functions
+
+fun Collection<CustomField>.mapGidsToValues(context: CustomFieldContext): Map<String, Any?> =
+    associateBy({ it.gid }, { it.inferValue(context) })
+
+fun Collection<Resource>.toGidArray(): Array<String> = map { it.gid }.toTypedArray()

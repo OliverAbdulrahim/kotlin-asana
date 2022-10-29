@@ -7,6 +7,6 @@ import com.asana.models.Resource
  * @param <D> The type of the destination object.
  */
 interface AsanaSerializer<A : Resource, B : AsanaSerializable<B>> {
-    fun serialize(source: B, alsoApply: A.(source: B) -> A): A
-    fun deserialize(source: A, alsoApply: B.(source: A) -> B): B
+    fun serialize(source: B): A
+    fun deserialize(source: A): B
 }

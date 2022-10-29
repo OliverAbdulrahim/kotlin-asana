@@ -5,8 +5,6 @@ import com.asana.requests.CollectionRequest
 import com.asana.requests.ItemRequest
 import org.conservationco.asana.AsanaConfig
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
-import org.conservationco.asana.serialization.customfield.context.NoOpCustomFieldContext
-import org.conservationco.asana.serialization.customfield.context.TaskCustomFieldContext
 import java.time.LocalDate
 
 class RequestExecutor(
@@ -20,26 +18,26 @@ class RequestExecutor(
         return request.execute()
     }
 
-    fun updateTask(task: Task): Task {
+    fun updateTask(task: Task, context: CustomFieldContext): Task {
         val request = client.tasks.update(task.gid)
         return executeDataRequestWith(
             request,
-            "custom_fields" to task.customFields.mapGidsToValues(decideContextFor(task))
+            "custom_fields" to task.customFields.mapGidsToValues(context)
         )
     }
 
-    fun createTask(task: Task): Task {
+    fun createTask(task: Task, context: CustomFieldContext): Task {
         val request = client.tasks.createTask()
         return executeDataRequestWith(
             request,
-            "customFields_fields" to task.customFields.mapGidsToValues(decideContextFor(task)),
+            "custom_fields" to task.customFields.mapGidsToValues(context),
             "name" to task.name,
         )
     }
 
     fun getAttachment(task: Task): Collection<Attachment> {
         val request = client.attachments.getAttachmentsForObject(task.gid)
-        return executeWithAndPaginate(request, "opt_expand" to ".")
+        return executeWithQueriesAndPaginate(request, expanded = true)
     }
 
     fun createAttachment(task: Task, attachment: Attachment): Attachment {
@@ -52,10 +50,9 @@ class RequestExecutor(
         return request.execute()
     }
 
-    fun getTasksPaginated(project: Project, expanded: Boolean): List<Task> {
-        val request = client.tasks.getTasksForProject(project.gid, LocalDate.EPOCH.toString())
-        return if (expanded) executeWithAndPaginate(request, "opt_expand" to ".")
-        else executeWithAndPaginate(request)
+    fun getTasksPaginated(project: Project, createdSince: LocalDate = LocalDate.EPOCH): List<Task> {
+        val request = client.tasks.getTasksForProject(project.gid, createdSince.toString())
+        return executeWithQueriesAndPaginate(request)
     }
 
     fun getCustomFieldSettingsPaginated(project: Project): List<CustomFieldSetting> {
@@ -106,11 +103,13 @@ class RequestExecutor(
         return request.execute()
     }
 
-    private fun <T> executeWithAndPaginate(
+    private fun <T> executeWithQueriesAndPaginate(
         request: CollectionRequest<T>,
-        vararg queryParameters: Pair<String, Any>,
+        expanded: Boolean = config.expandedResponses,
+        vararg fields: String = config.fields
     ): List<T> {
-        request.query.appendAll(queryParameters)
+        if (expanded) request.query["opt_expand"] = "."
+        else request.query.putAll(fields.associateBy { "opt_fields" })
         return collectPaginations(request)
     }
 
@@ -120,10 +119,6 @@ class RequestExecutor(
             request.query["offset"] = result.nextPage.offset
             result.data + collectPaginations(request)
         } else result.data
-    }
-
-    private fun decideContextFor(task: Task): CustomFieldContext {
-        return if (config.context is NoOpCustomFieldContext) TaskCustomFieldContext(task) else config.context
     }
 
 }

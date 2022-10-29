@@ -1,13 +1,17 @@
 package org.conservationco.asana
 
 import com.asana.Client
-import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
-import org.conservationco.asana.serialization.customfield.context.NoOpCustomFieldContext
 
 class AsanaConfig(
-    val client: Client = Client.accessToken(System.getenv("asana_access_token")),
-    val context: CustomFieldContext = NoOpCustomFieldContext,
+    val client: Client = ClientDefaults.CLIENT,
     var verboseLogs: Boolean = false,
+    var expandedResponses: Boolean = false,
+    vararg val fields: String = arrayOf("name"),
 ) {
-    init { client.apply { logAsanaChangeWarnings = verboseLogs } }
+    init {
+        client.apply {
+            logAsanaChangeWarnings = verboseLogs
+            options["page_size"] = 100
+        }
+    }
 }

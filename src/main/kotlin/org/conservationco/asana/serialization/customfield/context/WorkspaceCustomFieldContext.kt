@@ -1,11 +1,15 @@
 package org.conservationco.asana.serialization.customfield.context
 
 import com.asana.models.CustomField
+import com.asana.models.Workspace
+import org.conservationco.asana.AsanaClientExtension
 import org.conservationco.asana.asanaContext
-import org.conservationco.asana.util.selectWorkspace
 
-class WorkspaceCustomFieldContext(private val gid: String) : CustomFieldContext() {
-    override fun loadCustomFields(): Map<String, CustomField> {
-        asanaContext { return selectWorkspace(gid).getCustomFields().convertToMap() }
+class WorkspaceCustomFieldContext(
+    private val workspace: Workspace,
+    private val client: AsanaClientExtension,
+) : CustomFieldContext() {
+    override fun loadCustomFields(): Map<String, CustomField> = asanaContext(client) {
+        workspace.getCustomFields().mapGidsToCustomFields()
     }
 }

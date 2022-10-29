@@ -17,7 +17,7 @@ sealed class CustomFieldContext {
 
     protected abstract fun loadCustomFields(): Map<String, CustomField>
 
-    protected fun Collection<CustomField>.convertToMap(): Map<String, CustomField> {
+    protected fun Collection<CustomField>.mapGidsToCustomFields(): Map<String, CustomField> {
         return this.associateBy { it.name }
     }
 

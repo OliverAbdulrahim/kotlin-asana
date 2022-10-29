@@ -25,16 +25,16 @@ sealed class ResourceSubtype (
     abstract fun applyDataTo(customField: CustomField, fieldName: String, value: Any?)
 
     class Number : ResourceSubtype() {
-        override fun convertToGids(customField: CustomField): String = customField.numberValue
-        override fun convertToData(customField: CustomField): String = customField.numberValue
+        override fun convertToGids(customField: CustomField): String = customField.numberValue.orEmpty()
+        override fun convertToData(customField: CustomField): String = customField.numberValue.orEmpty()
         override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) {
             customField.numberValue = value.stringValue().ifEmpty { "0" }
         }
     }
 
     class Text : ResourceSubtype() {
-        override fun convertToGids(customField: CustomField): String = customField.textValue
-        override fun convertToData(customField: CustomField): String = customField.textValue
+        override fun convertToGids(customField: CustomField): String = customField.textValue.orEmpty()
+        override fun convertToData(customField: CustomField): String = customField.textValue.orEmpty()
         override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) {
             customField.textValue = value.stringValue()
         }
@@ -55,8 +55,26 @@ sealed class ResourceSubtype (
         }
         override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) {
             val selectedMultiEnumNames = value as Array<*>?
-            selectedMultiEnumNames?.map { context.optionForName(fieldName, it as String) }?.toList()
+            customField.multiEnumValues = selectedMultiEnumNames
+                ?.map { context.optionForName(fieldName, it as String) }
+                ?.toList()
         }
     }
+
+    class People(context: CustomFieldContext) : ResourceSubtype(context) {
+        override fun convertToGids(customField: CustomField): Any = throwFor(this)
+        override fun convertToData(customField: CustomField): Any = throwFor(this)
+        override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) = throwFor(this)
+    }
+
+    class Date : ResourceSubtype() {
+        override fun convertToGids(customField: CustomField): Any = throwFor(this)
+        override fun convertToData(customField: CustomField): Any = throwFor(this)
+        override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) = throwFor(this)
+    }
+
+    protected fun throwFor(type: ResourceSubtype): Nothing = throw UnsupportedOperationException("""
+        Serialization of ${type::class.simpleName} resources is not yet supported by the java-asana client library.
+    """.trimIndent())
 
 }

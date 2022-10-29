@@ -3,7 +3,7 @@ package org.conservationco.asana.serialization
 import com.asana.models.CustomField
 import com.asana.models.Task
 import org.conservationco.asana.serialization.customfield.CustomFieldException
-import org.conservationco.asana.serialization.customfield.CustomFieldSerializable
+import org.conservationco.asana.serialization.customfield.AsanaCustomField
 import org.conservationco.asana.serialization.customfield.CustomFieldTransferStrategy
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.NoOpCustomFieldContext
@@ -57,7 +57,7 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
     }
 
     private fun T.buildCustomFieldFrom(property: KProperty1<out Any, *>): CustomField? {
-        val serializedName = property.findAnnotation<CustomFieldSerializable>()?.name!!
+        val serializedName = property.findAnnotation<AsanaCustomField>()?.name!!
         val customField = context[serializedName]
         if (customField != null) {
             val value = property.getter.call(this)

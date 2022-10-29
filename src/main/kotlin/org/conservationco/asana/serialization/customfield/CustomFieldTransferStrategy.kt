@@ -20,6 +20,6 @@ class CustomFieldTransferStrategy(
         return kClass.memberProperties.associateByNotNull( { it.getCustomFieldAnnotation()?.name }, { it } )
     }
 
-    private fun KProperty1<out Any, *>.getCustomFieldAnnotation(): CustomFieldSerializable? = findAnnotation()
+    private fun KProperty1<out Any, *>.getCustomFieldAnnotation(): AsanaCustomField? = findAnnotation()
 
 }

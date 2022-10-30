@@ -8,7 +8,13 @@ need to, you can write your own serializer, which we discuss below.
 1. [Why this type of serialization useful?](#why-this-type-of-serialization-useful)
    * [Type safety](#type-safety-is-the-biggest-motivation)
    * [Loose coupling](#loose-coupling-is-another-motivation)
-2. [Example: people project](#usage-example-people-project)
+2. [Example: working with a project with friends from your travels!](#usage-example-project-with-friends-from-your-travels)
+3. [Working with Asana: the naive way](#working-with-asana-data-the-naive-way)
+   * [Code example (Kotlin)](#code-example-kotlin)
+4. [Working with Asana: an idiomatic approach](#working-with-asana-data-an-idiomatic-approach-with-kotlin-asana)
+   * [Updated code example (Kotlin)](#updated-code-example-kotlin)
+   * [Advantages of this updated approach](#advantages-of-this-updated-approach)
+   * [Killer feature: turn your objects into tasks](#killer-feature-turn-your-objects-into-tasks)
 
 ### Why this type of serialization useful?
 Great question!
@@ -16,8 +22,8 @@ Great question!
 #### Type safety is the biggest motivation. 
 Asana resources are designed for cross-platform use and are served as JSON. You'll get the direct unmarshalling of that 
 JSON when using client libraries like `java-asana`. That mapping of data is relatively fast, but not idiomatic to 
-strongly typed languages like Java and Kotlin. Critically, your code ends up prone to errors and mistakes, as your data
-isn't always mapped to its true type.
+statically typed languages like Java and Kotlin. Critically, since your data isn't always mapped to its true type, your
+code ends up prone to errors and mistakes,
 
 This library brings you back to the land of type safety, mapping your data to a model that you define, name, and 
 provide types for. 
@@ -41,11 +47,11 @@ These are dear friends of yours, so you've tracked important information about t
 * The time of year they like best (_Favorite season_)
 * Languages you chatted with them in (_Languages spoken_)
 
-### Collecting names and favorite desserts: the naive implementation
+### Working with Asana data: the naive way
 Say you wanted to programmatically work with your friend data. Maybe you want to collect all the desserts that you've
 enjoyed with your friends. Let's do that using `java-asana`:
 
-#### The Kotlin code
+#### Code example (Kotlin)
 ```kotlin
 // Imports and client setup ommitted
 val client = Client.accessToken("...")
@@ -70,11 +76,11 @@ That will work... But would you commit this?
 
 Even though we only needed to get a name and a custom field in this simple example, we wrote a lot of boilerplate to get
 to what we needed!
-1. ⛔️ We had to make sure we got the right query options 
+1. We had to make sure we got the right query options 
    * We'd have to remember to set `name` and `custom_fields` each time we make a request 
-2. ⛔️ Working with `CustomField` objects is clumsy and inefficient
+2. Working with `CustomField` objects is clumsy and inefficient
    * We have to iterate over a collection and compare Strings each time we need a custom field's value
-3. ⛔️ Our code is not idiomatic and doesn't encapsulate data we care about! 
+3. Our code is not idiomatic and doesn't encapsulate data we care about! 
    * We've had to hard code a field's name ("Favorite dessert")
    * We don't have checks over what type of data that custom field actually represents (think dynamic typing without any
 of the advantages of a dynamic type system) 
@@ -88,7 +94,7 @@ demand more.
 
 Let's see how we can do better with `kotlin-asana`.
 
-### Collecting names and favorite desserts: an upgraded, idiomatic approach
+### Working with Asana data: an idiomatic approach with `kotlin-asana`
 Let's start by taking a bottom-up, idiomatic approach. Why don't we model each friend into a simple class, `Person`?
 ```kotlin
 class Person(
@@ -101,27 +107,23 @@ class Person(
 ```
 That looks good! Each property we defined is related to parts of an Asana task. 
 
-Now... why don't we let `kotlin-asana` do all the hard work of mapping the data for us? Here's what we'll do:
+Now... why don't we let `kotlin-asana` do all the hard work of mapping the data for us? Before we dive into details,
+here's what we'll do:
 1. Implement the `AsanaSerializable<T>` interface
 2. Map each of the properties that are represented by custom fields with the `@AsanaCustomField` annotation
+3. Refactor our code from the previous section
 
-Here's what our updated class looks like:
+#### Updated code example (Kotlin)
 ```kotlin
 class Person(
     override var id: String = "",
     override var name: String = "",
-    @AsanaCustomField("Favorite dessert")
-    var favoriteDessert: String = "",
-    @AsanaCustomField("Favorite season") 
-    var favoriteSeason: String = "",
-    @AsanaCustomField("Languages spoken") 
-    var languagesSpoken: Array<String> = emptyArray(),
+    @AsanaCustomField("Favorite dessert") var favoriteDessert: String = "",
+    @AsanaCustomField("Favorite season") var favoriteSeason: String = "",
+    @AsanaCustomField("Languages spoken") var languagesSpoken: Array<String> = emptyArray(),
 ) : AsanaSerializable<Person>
-```
 
-Before we dive into details, let's refactor our code from the previous section: 
-#### Turn your tasks into objects
-```kotlin
+// elsewhere, in a land far away
 val projectGid = "12345"
 val people: List<Person> = asanaContext {
    project(projectGid) {
@@ -130,19 +132,21 @@ val people: List<Person> = asanaContext {
 }
 people.forEach { person -> println("${person.name} loves eating ${person.favoriteDessert}!")}
 ```
+That's all! Doesn't it read so much better? It's almost sentence-like.
 
-That's all! Doesn't it read so much better – it's almost sentence-like.
-
-#### Advantages of this
+#### Advantages of this updated approach
 `kotlin-asana` does all the messy work for you:
 1. Autowires you a client (from environment variables)
    * You could also specify your own!
 2. Sets up and executes your requests for you
    * Even handles pagination; whether you have 1 task or 101+ tasks, you get them in the same way
 3. Converts your `Task`s into your custom objects, in this case, `Person` 
+   * Your data is encapsulated properly and is easy to access
+4. Provides a declarative, Kotlin-idiomatic DSL for working with Asana resources
 
 #### Killer feature: turn your objects into tasks
-As easily as you converted `Person` into `Task`, now turn each `Person` object back into a `Task`!
+As easily as you converted `Person` into `Task`, now turn each `Person` object back into a `Task`! You could even do 
+this within the same `asanaContext`,
 
 ```kotlin
 asanaContext {

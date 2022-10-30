@@ -143,11 +143,12 @@ class AsanaClientExtension(private val config: AsanaConfig) {
 
     private fun checkConfigFieldsForSerializing() {
         if ("custom_fields" !in config.fields) throw CustomFieldException("""
-            Cannot serialize with the specified: AsanaConfig.fields=${config.fields}
+            
+            Cannot serialize with the specified: AsanaConfig.fields=${config.fields.contentToString()}
             
             Hint: if you're serializing a data object into tasks (or vice-versa), you must specify at least the 
-            "custom_field" option when constructing your AsanaConfig object. Alternatively, construct with
-            AsanaConfig(fields=SERIALIZING_FIELDS) or use ClientDefaults.serializingConfig directly. 
+            "custom_fields" option when constructing your AsanaConfig object.
+            
         """.trimIndent())
     }
 

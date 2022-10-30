@@ -109,7 +109,7 @@ class RequestExecutor(
         vararg fields: String = config.fields
     ): List<T> {
         if (expanded) request.query["opt_expand"] = "."
-        else request.query.putAll(fields.associateBy { "opt_fields" })
+        else request.query["opt_fields"] = fields.joinToString(separator = ",")
         return collectPaginations(request)
     }
 

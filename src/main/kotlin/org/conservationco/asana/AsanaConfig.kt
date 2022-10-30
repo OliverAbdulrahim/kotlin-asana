@@ -6,7 +6,7 @@ class AsanaConfig(
     val client: Client = ClientDefaults.CLIENT,
     var verboseLogs: Boolean = false,
     var expandedResponses: Boolean = false,
-    vararg val fields: String = arrayOf("name"),
+    vararg val fields: String = arrayOf("name", "custom_fields"),
 ) {
     init {
         client.apply {

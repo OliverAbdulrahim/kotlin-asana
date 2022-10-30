@@ -46,7 +46,7 @@ Say you wanted to programmatically work with your friend data. Maybe you want to
 enjoyed with your friends. Let's do that using `java-asana`:
 
 #### The Kotlin code
-```
+```kotlin
 // Imports and client setup ommitted
 val client = Client.accessToken("...")
 
@@ -90,7 +90,7 @@ Let's see how we can do better with `kotlin-asana`.
 
 ### Collecting names and favorite desserts: an upgraded, idiomatic approach
 Let's start by taking a bottom-up, idiomatic approach. Why don't we model each friend into a simple class, `Person`?
-```
+```kotlin
 class Person(
     var id: String = "",
     var name: String = "",
@@ -106,7 +106,7 @@ Now... why don't we let `kotlin-asana` do all the hard work of mapping the data 
 2. Map each of the properties that are represented by custom fields with the `@AsanaCustomField` annotation
 
 Here's what our updated class looks like:
-```
+```kotlin
 class Person(
     override var id: String = "",
     override var name: String = "",
@@ -121,7 +121,7 @@ class Person(
 
 Before we dive into details, let's refactor our code from the previous section: 
 #### Turn your tasks into objects
-```
+```kotlin
 val projectGid = "12345"
 val people: List<Person> = asanaContext {
    project(projectGid) {
@@ -144,7 +144,7 @@ That's all! Doesn't it read so much better – it's almost sentence-like.
 #### Killer feature: turn your objects into tasks
 As easily as you converted `Person` into `Task`, now turn each `Person` object back into a `Task`!
 
-```
+```kotlin
 asanaContext {
    project(projectGid) {
       people.convertToTaskList(this)

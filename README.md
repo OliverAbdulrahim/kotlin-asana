@@ -82,7 +82,7 @@ Follow these steps to provide your own configuration:
 3. Once configured, instantiate a `AsanaClientExtension`
 4. Store this object to use each time you call 
 [the `asanaContext` function](#using-the-asanacontext-entrypoint-function).
-```
+```kotlin
 val config = AsanaConfig(client = ..., context = ..., verboseLogs = ...)
 val ext = AsanaClientExtension(config)
 
@@ -113,7 +113,7 @@ This library makes use of Kotlin [extension functions](https://kotlinlang.org/do
 allowing you to cleanly and declaratively work with Asana resources within any `asanaContext`, without having to worry
 about the specific API implementation:
 
-```
+```kotlin
 asanaContext {
    
    // Tasks

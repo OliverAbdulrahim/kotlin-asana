@@ -5,9 +5,9 @@ import com.asana.models.Resource
 import org.conservationco.asana.serialization.customfield.ResourceSubtype
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
 
-fun CustomField.addMultiEnumOptions(vararg optionsToSelect: String) {
+fun CustomField.selectMultiEnumOptions(vararg optionsToSelect: String) {
     val options = enumOptions.filter { optionsToSelect.contains(it.name) }
-    multiEnumValues.addAll(options)
+    multiEnumValues = options
 }
 
 fun CustomField.multiEnumToGids(): Array<String> = if (multiEnumValues == null) arrayOf("") else multiEnumValues.toGidArray()

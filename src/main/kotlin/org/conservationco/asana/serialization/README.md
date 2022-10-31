@@ -8,6 +8,7 @@ need to, you can write your own serializer, which we discuss below.
 1. [Why this type of serialization useful?](#why-this-type-of-serialization-useful)
    * [Type safety](#type-safety-is-the-biggest-motivation)
    * [Loose coupling](#loose-coupling-is-another-motivation)
+   * [Encapsulation](#encapsulation-of-data-as-well)
 2. [Example: working with a project with friends from your travels!](#usage-example-project-with-friends-from-your-travels)
    1. [Working with Asana: the naive way](#working-with-asana-data-the-naive-way)
       * [Code example (Kotlin)](#code-example-kotlin)
@@ -15,7 +16,7 @@ need to, you can write your own serializer, which we discuss below.
    2. [Working with Asana: an idiomatic approach](#working-with-asana-data-an-idiomatic-approach-with-kotlin-asana)
       * [Updated code example (Kotlin)](#updated-code-example-kotlin)
       * [Advantages of this updated approach](#advantages-of-this-updated-approach)
-      * [It gets better: turn your objects back into tasks](#killer-feature-turn-your-objects-into-tasks)
+      * [It gets better: turn your objects back into tasks](#it-gets-better-turn-your-objects-back-into-tasks)
 
 ## Why this type of serialization useful?
 ### Type safety is the biggest motivation.

@@ -1,4 +1,4 @@
-# `kotlin-asana` serialization overview
+# `kotlin-asana` serialization handbook
 This document will guide you through how to serialize data to and from Asana using this library! You can turn any `Task`
 into your own custom data object, and back to a `Task` again. We prefer convention to configuration, so we've set up the
 default behavior to do all the work of object construction for you. That said, this library is _extensible_! Should you

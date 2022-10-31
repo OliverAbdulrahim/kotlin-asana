@@ -1,60 +1,84 @@
 # Welcome to `kotlin-asana`!
-This repository is home to a Kotlin wrapper for `java-asana`, which is aimed at extending the client's functionality
-designed around simple, declarative, and fun to use calls! 
+This repository is home to a library for Asana written in Kotlin, which implements task ⇔️ object serialization, a DSL 
+for working with resources, auto pagination handling, and more! 
 
-`kotlin-asana` makes common use cases a breeze and also implements useful features extending `java-asana`'s 
-functionality. Use this library to easily convert your own data objects into Asana `Tasks` and back. Easily work with 
-custom fields, handle pagination automatically, work with project templates, and much more. 
-
-Essentially, this library allows you to focus on writing your business logic instead of intricate API calls! Read on to
-learn more and find examples. 
+`kotlin-asana` is aimed at extending the client's functionality with simple, declarative, and fun to use calls! 
+Essentially, this library saves you from spending lots of time crafting API calls, so you can focus on your business 
+logic. Read on to learn more and find examples. 
 
 ## Jump to a section
 1. [Overview of features](#overview-of-features)
-2. [Installation (with Maven)](#installation-with-maven)
+2. [Quick examples](#quick-examples)
+3. [Installation (with Maven)](#installation-with-maven)
    1. [Add this project as a dependency](#add-this-project-as-a-dependency)
    2. [Add JitPack as a repository](#add-jitpack-as-a-repository)
-3. [Setup](#setup)
+4. [Quick setup](#quick-setup)
    * [Supply your access token via environment variables](#supply-your-access-token-via-environment-variables)
    * [Alternative authentication methods](#alternative-authentication-methods)
-4. [Configuration](#configuration)
-   * [Default behavior](#default-behavior)
-   * [Providing your own configuration](#providing-your-own-configuration)
-5. [Usage examples](#usage-examples)
-    * [Using the `asanaContext` entrypoint](#using-the-asanacontext-entrypoint-function)
-    * [Working with resources](#working-with-resources)
+5. Configuration
+   * [Default behavior](src/main/kotlin/org/conservationco/asana/README.md#configuration-default-behavior)
+   * [Providing your own configuration](src/main/kotlin/org/conservationco/asana/README.md#configuration-provide-your-own)
+6. Usage examples
+    * Getting started with this library
+      * [Using the `asanaContext` entrypoint](src/main/kotlin/org/conservationco/asana/README.md#using-the-asanacontext-entrypoint-function)
+      * [Working with resources](#working-with-resources)
+    * Serializing user-defined objects into tasks and back
+      * [Why, motivations, and use cases](src/main/kotlin/org/conservationco/asana/serialization/README.md#why-this-type-of-serialization-useful)
+      * [Working with Asana data: an idiomatic approach with `kotlin-asana`](src/main/kotlin/org/conservationco/asana/serialization/README.md#working-with-asana-data-an-idiomatic-approach-with-kotlin-asana)
 
 ## Overview of features 
 ### This library implements / supports:
 1. Support for serializing and deserializing `Tasks` and their `CustomField`s into data objects.
-2. Automagically handles pagination, passing query parameters, and other intricate setup work for you!
-3. Declaratively working with custom fields, tasks, projects, and workspaces.
+2. Declaratively working with custom fields, tasks, projects, and workspaces.
+3. Automagically handles pagination, passing query parameters, and other intricate setup work for you!
 4. Searching for tasks within a workspace or project, with support for filters.
 5. Enforces best practices for handling your access token.
 
+## Quick examples
+### Working with resources
+This library makes use of Kotlin [function literals with receiver](https://kotlinlang.org/docs/lambdas.html#function-literals-with-receiver)
+and [extension functions](https://kotlinlang.org/docs/extensions.html#extension-functions); these allow you to cleanly 
+and declaratively work with Asana resources like tasks, projects, and workspaces within any `asanaContext` (the entry
+point for this library).
+
+```kotlin
+asanaContext {
+    // Tasks
+    val person: Person = task("123") { this.convertTo(Person::class) }
+
+    // Projects
+    val taskAgain: Task = project("456") { person.convertToTask(this).update() }
+
+    // Workspaces
+    val search: List<Task> = workspace("789") { search("ice cream sundae", "456") }
+}
+```
+Learn more about `asanaContext` [at this link](src/main/kotlin/org/conservationco/asana/README.md). More information on
+this library's serialization [at this link](src/main/kotlin/org/conservationco/asana/serialization/README.md).
+
 ## Installation (with Maven) 
+Deployment of this project to Maven central coming soon. For now, use JitPack.
 ### Add this project as a dependency
 Include this git repository into your project's `pom.xml` with the following dependency:
 
-```
+```xml
 <dependency>
    <groupId>com.github.OliverAbdulrahim</groupId>
    <artifactId>kotlin-asana</artifactId>
 </dependency>
 ```
-
 ### Add JitPack as a repository
 You'll also want to make sure that you have the [JitPack](https://jitpack.io/) repository:
-```
+```xml
 <repository>
    <id>jitpack.io</id>
    <url>https://jitpack.io</url>
 </repository>
 ```
 
-## Setup
+## Quick setup
 ### Supply your access token via environment variables
-_Recommended:_ for the easy, autowired setup, supply the `asana_access_token` environment variable wherever you use 
+_Recommended:_ for easy, autowired setup, supply the `asana_access_token` environment variable wherever you use 
 `kotlin-asana`.
 
 ```
@@ -62,75 +86,5 @@ java -jar <your app name>.jar asana_access_token=<your access token>
 ```
 
 ### Alternative authentication methods
-If you prefer to authenticate another way, or if you already have a `java-asana` `Client` object, follow these steps
-to [provide `kotlin-asana` your own configuration](#providing-your-own-configuration). 
-
-## Configuration
-### Default behavior
-If you [pass an access token as an environment variable](#supply-your-access-token-via-environment-variables), 
-`kotlin-asana` will autowire a `java-asana` `Client` object for you, without any additional configuration needed. 
-
-### Providing your own configuration
-Follow these steps to provide your own configuration:
-1. Create an object of the `AsanaConfig` class.
-2. Use the constructor to specify your desired options. 
-   * You can mix and match any of the following types of
-      configuration:
-      * A `java-asana` `Client`(optional)
-      * A `CustomFieldContext` (required only if you're serializing Tasks into custom data objects and back)
-      * Verbosity of logs (optional)
-3. Once configured, instantiate a `AsanaClientExtension`
-4. Store this object to use each time you call 
-[the `asanaContext` function](#using-the-asanacontext-entrypoint-function).
-```kotlin
-val config = AsanaConfig(client = ..., context = ..., verboseLogs = ...)
-val ext = AsanaClientExtension(config)
-
-asanaContext(ext) { ... }
-```
-
-## Usage examples
-### Using the `asanaContext` entrypoint function
-To quickly start working with asana from anywhere in your codebase, call the `asanaContext` 
-[top level function](https://kotlinlang.org/docs/functions.html#function-scope).
-```
-asanaContext { <interact with Asana here> }
-```
-When inside the scope of `asanaContext`, `this` refers to an `AsanaClientExtension`. The function returns any value `R`,
-which allows you to more conveniently escape objects you declare or obtain within its scope — simply assign the return 
-value of `asanaContext` to the desired object.
-
-Note that, to call `asanaContext` without specifying any parameters, you _must_ pass in your access token as an 
-environment variable. Under the hood, `kotlin-asana` autowires a `java-asana` `Client` object for you, which is then
-reused for any subsequent calls you make.
-
-If you cannot pass in environment variables, or if you need to authenticate another way, 
-[instantiate your own `Client`](#providing-your-own-configuration) and provide it each time you call 
-`asanaContext`.
-
-### Working with resources
-This library makes use of Kotlin [extension functions](https://kotlinlang.org/docs/extensions.html#extension-functions),
-allowing you to cleanly and declaratively work with Asana resources within any `asanaContext`, without having to worry
-about the specific API implementation:
-
-```kotlin
-asanaContext {
-   
-   // Tasks
-   val task = selectTask(taskGid = "12345")
-   val customField = task.findCustomField("name")
-   val attachment = task.createAttachment(Attachment())
-   task.delete()
-   
-   // Projects
-   val project = selectProject(projectGid = "56789")
-   val tasks: List<Task> = project.getTasks(includeAttachments = true, expanded = true) // pagination is handled for you
-   
-   // Workspaces
-   val workspace = selectWorkspace(workspaceGid = "09876")
-   val tasks: List<Task> = workspace.search(textQuery = "ice cream sundae", "project1", "project2", ...)  
-   
-}
-```
-
-More examples coming soon!
+If you prefer to authenticate another way, or if you already have a `java-asana` `Client` object, follow these steps to
+[provide `kotlin-asana` your own configuration (links to another document on this repository)](src/main/kotlin/org/conservationco/asana/README.md#providing-your-own-configuration). 

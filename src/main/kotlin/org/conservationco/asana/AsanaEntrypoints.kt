@@ -7,6 +7,8 @@ import com.asana.models.Workspace
 
 fun task(taskGid: String): Task = Task().initResource(taskGid)
 
+inline fun <R> task(gid: String, block: Task.() -> R): R = task(gid).block()
+
 fun project(projectGid: String): Project = Project().initResource(projectGid)
 
 inline fun <R> project(gid: String, block: Project.() -> R): R = project(gid).block()

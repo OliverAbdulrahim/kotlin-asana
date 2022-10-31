@@ -12,83 +12,92 @@ class RequestExecutor(
 ) {
 
     private val client = config.client
+    val tasks = Tasks()
+    val projects = Projects()
+    val workspaces = Workspaces()
 
-    fun deleteTask(task: Task): Task {
-        val request = client.tasks.delete(task.gid)
-        return request.execute()
+    inner class Tasks {
+        fun deleteTask(task: Task): Task {
+            val request = client.tasks.delete(task.gid)
+            return request.execute()
+        }
+
+        fun updateTask(task: Task, context: CustomFieldContext): Task {
+            val request = client.tasks.update(task.gid)
+            return executeDataRequestWith(
+                request,
+                "custom_fields" to task.customFields.mapGidsToValues(context)
+            )
+        }
+
+        fun createTask(task: Task, context: CustomFieldContext): Task {
+            val request = client.tasks.createTask()
+            return executeDataRequestWith(
+                request,
+                "custom_fields" to task.customFields.mapGidsToValues(context),
+                "name" to task.name,
+            )
+        }
+
+        fun getAttachment(task: Task): Collection<Attachment> {
+            val request = client.attachments.getAttachmentsForObject(task.gid)
+            return executeWithQueriesAndPaginate(request, expanded = true)
+        }
+
+        fun createAttachment(task: Task, attachment: Attachment): Attachment {
+            val request = client.attachments.createOnTask(
+                task.gid,
+                attachment.downloadUrl.openStream(),
+                attachment.name,
+                attachment.resourceType
+            )
+            return request.execute()
+        }
     }
 
-    fun updateTask(task: Task, context: CustomFieldContext): Task {
-        val request = client.tasks.update(task.gid)
-        return executeDataRequestWith(
-            request,
-            "custom_fields" to task.customFields.mapGidsToValues(context)
-        )
+    inner class Projects {
+        fun getTasksPaginated(project: Project, createdSince: LocalDate = LocalDate.EPOCH): List<Task> {
+            val request = client.tasks.getTasksForProject(project.gid, createdSince.toString())
+            return executeWithQueriesAndPaginate(request)
+        }
+
+        fun getCustomFieldSettingsPaginated(project: Project): List<CustomFieldSetting> {
+            val request = client.customFieldSettings.findByProject(project.gid)
+            return collectPaginations(request)
+        }
     }
 
-    fun createTask(task: Task, context: CustomFieldContext): Task {
-        val request = client.tasks.createTask()
-        return executeDataRequestWith(
-            request,
-            "custom_fields" to task.customFields.mapGidsToValues(context),
-            "name" to task.name,
-        )
-    }
+    inner class Workspaces {
+        fun searchWorkspacePaginated(
+            workspace: Workspace,
+            textQuery: String,
+            vararg projectGids: String
+        ): List<Task> {
+            val request = client.tasks.searchInWorkspace(workspace.gid);
+            request.query["projects="] = projectGids.joinToString(separator = ",")
+            request.query["text="] = textQuery
+            return collectPaginations(request)
+        }
 
-    fun getAttachment(task: Task): Collection<Attachment> {
-        val request = client.attachments.getAttachmentsForObject(task.gid)
-        return executeWithQueriesAndPaginate(request, expanded = true)
-    }
+        fun getProjectsPaginated(workspace: Workspace, includeArchived: Boolean): Collection<Project> {
+            val request = client.projects.getProjectsForWorkspace(workspace.gid, includeArchived)
+            return collectPaginations(request)
+        }
 
-    fun createAttachment(task: Task, attachment: Attachment): Attachment {
-        val request = client.attachments.createOnTask(
-            task.gid,
-            attachment.downloadUrl.openStream(),
-            attachment.name,
-            attachment.resourceType
-        )
-        return request.execute()
-    }
+        fun instantiateTemplate(projectGid: String, projectTitle: String, projectTeam: String): Job {
+            val request = client.projectTemplates.instantiateProject(projectGid)
+            return executeQueryRequestWith(
+                request,
+                "name" to projectTitle,
+                "team" to projectTeam,
+                "public" to false
+            )
+        }
 
-    fun getTasksPaginated(project: Project, createdSince: LocalDate = LocalDate.EPOCH): List<Task> {
-        val request = client.tasks.getTasksForProject(project.gid, createdSince.toString())
-        return executeWithQueriesAndPaginate(request)
-    }
-
-    fun getCustomFieldSettingsPaginated(project: Project): List<CustomFieldSetting> {
-        val request = client.customFieldSettings.findByProject(project.gid)
-        return collectPaginations(request)
-    }
-
-    fun searchWorkspacePaginated(
-        workspace: Workspace,
-        textQuery: String,
-        vararg projectGids: String
-    ): List<Task> {
-        val request = client.tasks.searchInWorkspace(workspace.gid);
-        request.query["projects="] = projectGids.joinToString(separator = ",")
-        request.query["text="] = textQuery
-        return collectPaginations(request)
-    }
-
-    fun getProjectsPaginated(workspace: Workspace, includeArchived: Boolean): Collection<Project> {
-        val request = client.projects.getProjectsForWorkspace(workspace.gid, includeArchived)
-        return collectPaginations(request)
-    }
-
-    fun instantiateTemplate(projectGid: String, projectTitle: String, projectTeam: String): Job {
-        val request = client.projectTemplates.instantiateProject(projectGid)
-        return executeQueryRequestWith(
-            request,
-            "name" to projectTitle,
-            "team" to projectTeam,
-            "public" to false
-        )
-    }
-
-    fun getCustomFieldsPaginated(workspace: Workspace): List<CustomField> {
-        val request = client.customFields.getCustomFieldsForWorkspace(workspace.gid)
-        return collectPaginations(request)
+        fun getCustomFieldsPaginated(workspace: Workspace): List<CustomField> {
+            val request = client.customFields.getCustomFieldsForWorkspace(workspace.gid)
+            return collectPaginations(request)
+        }
     }
 
 // Request execution / pagination handling functions

@@ -19,20 +19,20 @@ class AsanaClientExtension(private val config: AsanaConfig) {
 // Task extension functions
 
     fun Task.delete(): Task {
-        return requestExecutor.deleteTask(this)
+        return requestExecutor.tasks.deleteTask(this)
     }
 
     fun Task.update(): Task {
-        return requestExecutor.updateTask(this, getContextFor(this))
+        return requestExecutor.tasks.updateTask(this, getContextFor(this))
     }
 
     fun Task.getAttachments(): Collection<Attachment> {
-        return if (attachments == null) requestExecutor.getAttachment(this)
+        return if (attachments == null) requestExecutor.tasks.getAttachment(this)
         else attachments
     }
 
     fun Task.createAttachment(attachment: Attachment): Attachment {
-        return requestExecutor.createAttachment(this, attachment)
+        return requestExecutor.tasks.createAttachment(this, attachment)
     }
 
     fun Task.createAttachments(attachments: Collection<Attachment>) {
@@ -42,7 +42,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
 // Project extension functions
 
     fun Project.getTasks(includeAttachments: Boolean = false): List<Task> {
-        val tasks = requestExecutor.getTasksPaginated(this)
+        val tasks = requestExecutor.projects.getTasksPaginated(this)
         if (includeAttachments) {
             tasks
                 .associateBy({ it }, { it.getAttachments() })
@@ -52,33 +52,31 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     }
 
     fun Project.createTask(task: Task): Task {
-        val created = requestExecutor.createTask(task, getContextFor(this))
+        val created = requestExecutor.tasks.createTask(task, getContextFor(this))
         if (task.attachments != null) task.attachments.forEach { created.createAttachment(it) }
         return created
     }
 
     fun Project.getCustomFields(): Collection<CustomField> {
-        return requestExecutor
-            .getCustomFieldSettingsPaginated(this)
-            .map { it.customField }
+        return requestExecutor.projects.getCustomFieldSettingsPaginated(this).map { it.customField }
     }
 
 // Workspace extension functions
 
     fun Workspace.search(textQuery: String, vararg projectGids: String = arrayOf("")): List<Task> {
-        return requestExecutor.searchWorkspacePaginated(this, textQuery, *projectGids)
+        return requestExecutor.workspaces.searchWorkspacePaginated(this, textQuery, *projectGids)
     }
 
     fun Workspace.getAllProjects(includeArchived: Boolean = true): Collection<Project> {
-        return requestExecutor.getProjectsPaginated(this, includeArchived)
+        return requestExecutor.workspaces.getProjectsPaginated(this, includeArchived)
     }
 
     fun Workspace.instantiateTemplate(projectGid: String, projectTitle: String, projectTeam: String): Job {
-        return requestExecutor.instantiateTemplate(projectGid, projectTitle, projectTeam)
+        return requestExecutor.workspaces.instantiateTemplate(projectGid, projectTitle, projectTeam)
     }
 
     fun Workspace.getCustomFields(): Collection<CustomField> {
-        return requestExecutor.getCustomFieldsPaginated(this)
+        return requestExecutor.workspaces.getCustomFieldsPaginated(this)
     }
 
 // Type conversion functions

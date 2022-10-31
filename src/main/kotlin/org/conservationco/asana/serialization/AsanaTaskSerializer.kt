@@ -40,6 +40,10 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
         return destination
     }
 
+    override fun serialize(source: T, runAfter: (source: T, destination: Task) -> Unit): Task {
+        return serialize(source).apply { runAfter(source, this@apply) }
+    }
+
     override fun deserialize(source: Task): T {
         val destination: T = `class`.createInstance()
         source.customFields.forEach {
@@ -50,6 +54,10 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
             name = source.name
             id = source.gid
         }
+    }
+
+    override fun deserialize(source: Task, runAfter: (source: Task, destination: T) -> Unit): T {
+        return deserialize(source).apply { runAfter(source, this@apply) }
     }
 
     private fun T.convertPropertiesToCustomFields(): List<CustomField> {

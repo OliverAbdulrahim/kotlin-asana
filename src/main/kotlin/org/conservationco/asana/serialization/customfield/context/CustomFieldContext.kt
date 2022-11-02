@@ -12,7 +12,7 @@ abstract class CustomFieldContext {
     operator fun get(customFieldName: String): CustomField? = namesToCustomFields[customFieldName]
 
     internal fun optionForName(customFieldName: String, selectedEnumName: String?): CustomField.EnumOption? {
-        return enumOptions[customFieldName]!!.find { it.name == selectedEnumName }
+        return enumOptions[customFieldName]?.find { it.name == selectedEnumName }
     }
 
     protected abstract fun loadCustomFields(): Map<String, CustomField>

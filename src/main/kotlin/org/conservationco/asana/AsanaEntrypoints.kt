@@ -27,4 +27,4 @@ inline fun <R> asanaContext(
 inline fun <R> asanaContext(
     config: AsanaConfig,
     block: AsanaClientExtension.() -> R
-): R = AsanaClientExtension(config).block()
+): R = asanaContext(AsanaClientExtension(config), block)

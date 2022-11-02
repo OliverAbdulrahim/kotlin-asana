@@ -30,7 +30,7 @@ fun CustomField.isText(): Boolean = this.resourceSubtype == "text" || this.resou
  */
 fun CustomField.inferValue(context: CustomFieldContext): Any? = asResourceSubtype(context).convertToData(this)
 
-fun CustomField.asResourceSubtype(context: CustomFieldContext): ResourceSubtype {
+internal fun CustomField.asResourceSubtype(context: CustomFieldContext): ResourceSubtype {
     val typeConstructor = ResourceSubtype.types[resourceSubtype]!!
     return if (typeConstructor.parameters.isEmpty()) typeConstructor.call()
     else typeConstructor.call(context)
@@ -38,7 +38,7 @@ fun CustomField.asResourceSubtype(context: CustomFieldContext): ResourceSubtype 
 
 // Collection functions
 
-fun Collection<CustomField>.mapGidsToValues(context: CustomFieldContext): Map<String, Any?> =
+internal fun Collection<CustomField>.mapGidsToValues(context: CustomFieldContext): Map<String, Any?> =
     associateBy({ it.gid }, { it.inferValue(context) })
 
-fun Collection<Resource>.toGidArray(): Array<String> = map { it.gid }.toTypedArray()
+internal fun Collection<Resource>.toGidArray(): Array<String> = map { it.gid }.toTypedArray()

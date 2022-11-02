@@ -4,7 +4,7 @@ import com.asana.models.CustomField
 import org.conservationco.asana.util.isEnum
 import org.conservationco.asana.util.isMultiEnum
 
-sealed class CustomFieldContext {
+abstract class CustomFieldContext {
 
     private val namesToCustomFields: Map<String, CustomField> by lazy { loadCustomFields() }
     private val enumOptions: Map<String, Collection<CustomField.EnumOption>> by lazy { namesToCustomFields.collectEnumOptions() }

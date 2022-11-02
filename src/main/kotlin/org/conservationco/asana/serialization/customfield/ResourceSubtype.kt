@@ -55,9 +55,7 @@ sealed class ResourceSubtype (
         }
         override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) {
             val selectedMultiEnumNames = value as Array<*>?
-            customField.multiEnumValues = selectedMultiEnumNames
-                ?.map { context.optionForName(fieldName, it as String) }
-                ?.toList()
+            customField.multiEnumValues = selectedMultiEnumNames?.map { context.optionForName(fieldName, it as String) }
         }
     }
 

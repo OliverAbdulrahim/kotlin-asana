@@ -27,4 +27,13 @@ abstract class CustomFieldContext {
             .associateBy( { it.key }, { it.value.enumOptions } )
     }
 
+    override fun toString(): String {
+        val joined = namesToCustomFields.entries.joinToString(
+            prefix = "[",
+            separator = ", ",
+            postfix = "]"
+        ) { "{customField.name=${it.key}, customField.resourceSubtype=${it.value.resourceSubtype}}" }
+        return "CustomFieldContext($joined)"
+    }
+
 }

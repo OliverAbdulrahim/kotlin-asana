@@ -4,9 +4,11 @@ import com.asana.models.CustomField
 import com.asana.models.Task
 import org.conservationco.asana.serialization.stubs.*
 import org.conservationco.asana.serialization.stubs.PersonCustomFieldContextStub
-import org.conservationco.asana.serialization.stubs.getEnumCustomField
-import org.conservationco.asana.serialization.stubs.getMultiEnumField
-import org.conservationco.asana.serialization.stubs.getTextCustomField
+import org.conservationco.asana.serialization.stubs.PersonCustomFields.noOpGid
+import org.conservationco.asana.serialization.stubs.PersonCustomFields.personEnumCustomField
+import org.conservationco.asana.serialization.stubs.PersonCustomFields.personMultiEnumField
+import org.conservationco.asana.serialization.stubs.PersonCustomFields.personTextCustomField
+import org.conservationco.asana.util.enumOptionOf
 import org.junit.jupiter.api.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -22,15 +24,13 @@ internal class AsanaTaskSerializerTest {
         val destination: Task = underTest.serialize(source)
 
         // When
-        val expectedCustomField = getTextCustomField()
+        val expectedCustomField = personTextCustomField()
         val actualCustomField = destination.customFields.find { it.name == expectedCustomField.name }!!
 
         // Then
         assertForCustomFields(
-            expectedCustomField = expectedCustomField,
-            expectedCustomFieldValue = source.favoriteDessert,
-            actualCustomField = actualCustomField,
-            actualCustomFieldValue = actualCustomField.textValue
+            expectedCustomField, source.favoriteDessert, actualCustomField,
+            actualCustomField.textValue
         )
     }
 
@@ -41,15 +41,15 @@ internal class AsanaTaskSerializerTest {
         val destination: Task = underTest.serialize(source)
 
         // When
-        val expectedCustomField = getEnumCustomField()
+        val expectedCustomField = personEnumCustomField()
         val actualCustomField = destination.customFields.find { it.name == expectedCustomField.name }!!
 
         // Then
         assertForCustomFields(
-            expectedCustomField = expectedCustomField,
-            expectedCustomFieldValue = source.favoriteSeason,
-            actualCustomField = actualCustomField,
-            actualCustomFieldValue = actualCustomField.enumValue?.name
+            expectedCustomField,
+            source.favoriteSeason,
+            actualCustomField,
+            actualCustomField.enumValue?.name
         )
     }
 
@@ -60,19 +60,67 @@ internal class AsanaTaskSerializerTest {
         val destination: Task = underTest.serialize(source)
 
         // When
-        val expectedCustomField = getMultiEnumField()
+        val expectedCustomField = personMultiEnumField()
         val actualCustomField = destination.customFields.find { it.name == expectedCustomField.name }!!
 
         // Then
         assertForCustomFields(
-            expectedCustomField = expectedCustomField,
-            expectedCustomFieldValue = source.languagesSpoken,
-            actualCustomField = actualCustomField,
-            actualCustomFieldValue = actualCustomField.multiEnumValues.map { it?.name }.toTypedArray()
+            expectedCustomField,
+            source.languagesSpoken,
+            actualCustomField,
+            actualCustomField.multiEnumValues.map { it?.name }.toTypedArray()
         )
     }
 
-    @Suppress("UNCHECKED_CAST")
+    @Test
+    fun `deserialization of text CustomField`() {
+        // Given
+        val textCustomField = personTextCustomField().apply { textValue = "Nan-e nokhodchi"}
+        val source = Task().apply { customFields = listOf(textCustomField) }
+        val destination: Person = underTest.deserialize(source)
+
+        // When
+        val expectedValue = textCustomField.textValue
+        val actualValue = destination.favoriteDessert
+
+        // Then
+        assertEquals(expectedValue, actualValue)
+    }
+
+    @Test
+    fun `deserialization of enum CustomField`() {
+        // Given
+        val enumCustomField = personEnumCustomField().apply { enumValue = enumOptionOf("Winter", noOpGid) }
+        val source = Task().apply { customFields = listOf(enumCustomField) }
+        val destination: Person = underTest.deserialize(source)
+
+        // When
+        val expectedValue = enumCustomField.enumValue.name
+        val actualValue = destination.favoriteSeason
+
+        // Then
+        assertEquals(expectedValue, actualValue)
+    }
+
+    @Test
+    fun `deserialization of multi_enum CustomField`() {
+        // Given
+        val multiEnumCustomField = personMultiEnumField().apply {
+            multiEnumValues = listOf(
+                enumOptionOf("Turkish", noOpGid),
+                enumOptionOf("Spanish", noOpGid))
+        }
+        val source = Task().apply { customFields = listOf(multiEnumCustomField) }
+        val destination: Person = underTest.deserialize(source)
+
+        // When
+        val expectedValue = multiEnumCustomField.multiEnumValues.map { it.name }.toTypedArray()
+        val actualValue = destination.languagesSpoken
+
+        // Then
+        assertContentEquals(expectedValue, actualValue)
+    }
+
     private fun <T> assertForCustomFields(
         expectedCustomField: CustomField,
         expectedCustomFieldValue: T,
@@ -85,15 +133,13 @@ internal class AsanaTaskSerializerTest {
         val actualCustomFieldGid = actualCustomField.gid
         val actualCustomFieldName = actualCustomField.name
 
-        assertEquals(expected = expectedCustomFieldGid, actual = actualCustomFieldGid)
-        assertEquals(expected = expectedCustomFieldName, actual = actualCustomFieldName)
+        assertEquals(expectedCustomFieldGid, actualCustomFieldGid)
+        assertEquals(expectedCustomFieldName, actualCustomFieldName)
         if (expectedCustomFieldValue is Array<*>) {
-            assertContentEquals(
-                expected = expectedCustomFieldValue as Array<T>?,
-                actual = actualCustomFieldValue as Array<T>?
-            )
+            @Suppress("UNCHECKED_CAST")
+            assertContentEquals(expectedCustomFieldValue as Array<T>?, actualCustomFieldValue as Array<T>?)
         }
-        else assertEquals(expected = expectedCustomFieldValue, actual = actualCustomFieldValue)
+        else assertEquals(expectedCustomFieldValue, actualCustomFieldValue)
     }
 
 }

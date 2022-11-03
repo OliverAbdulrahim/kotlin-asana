@@ -50,8 +50,8 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
             if (property != null) setProperty(destination, property, it.inferValue(context))
         }
         return destination.apply {
-            name = source.name
-            id = source.gid
+            name = source.name.orEmpty()
+            id = source.gid.orEmpty()
         }
     }
 

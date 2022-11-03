@@ -7,6 +7,12 @@ import org.conservationco.asana.AsanaConfig
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
 import java.time.LocalDate
 
+/**
+ * Utility class for executing Asana requests.
+ *
+ * @property config Configuration for this object, including what client to select, verbosity of logs, and optional
+ *                  fields to return.
+ */
 class RequestExecutor(
     private val config: AsanaConfig,
 ) {
@@ -16,6 +22,9 @@ class RequestExecutor(
     val projects = Projects()
     val workspaces = Workspaces()
 
+    /**
+     * Container class for requests related to [Task] objects.
+     */
     inner class Tasks {
         fun deleteTask(task: Task): Task {
             val request = client.tasks.delete(task.gid)
@@ -55,6 +64,9 @@ class RequestExecutor(
         }
     }
 
+    /**
+     * Container class for requests related to [Project] objects.
+     */
     inner class Projects {
         fun getTasksPaginated(project: Project, createdSince: LocalDate = LocalDate.EPOCH): List<Task> {
             val request = client.tasks.getTasksForProject(project.gid, createdSince.toString())
@@ -67,6 +79,9 @@ class RequestExecutor(
         }
     }
 
+    /**
+     * Container class for requests related to [Workspace] objects.
+     */
     inner class Workspaces {
         fun searchWorkspacePaginated(
             workspace: Workspace,

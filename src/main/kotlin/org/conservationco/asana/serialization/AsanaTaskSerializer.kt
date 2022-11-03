@@ -14,6 +14,13 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.createInstance
 
+/**
+ * Class that (de)serializes Asana [Task] objects into data objects.
+ *
+ * @param T The type of the data class.
+ * @property class The type class of the data class.
+ * @property context The source of `CustomField` objects for this serializer.
+ */
 class AsanaTaskSerializer<T : AsanaSerializable<T>>(
     private val `class`: KClass<out T>,
     private val context: CustomFieldContext,
@@ -30,6 +37,9 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
         )
     }
 
+    /**
+     * Serializes the given [source] ([T]) object, returning the [Task] result.
+     */
     override fun serialize(source: T): Task {
         val destination = Task().apply {
             customFields = source.convertPropertiesToCustomFields()
@@ -39,10 +49,17 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
         return destination
     }
 
+    /**
+     * Serializes the given [source] ([T]) object, then applies the given [runAfter] function, and finally returns the
+     * [Task] result.
+     */
     override fun serialize(source: T, runAfter: (source: T, destination: Task) -> Unit): Task {
         return serialize(source).apply { runAfter(source, this@apply) }
     }
 
+    /**
+     * Deserializes the given [source] ([Task]) object, returning the [T] result.
+     */
     override fun deserialize(source: Task): T {
         val destination: T = `class`.createInstance()
         source.customFields.forEach {
@@ -55,14 +72,30 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
         }
     }
 
+    /**
+     * Deserializes the given [source] ([Task]) object, then applies the given [runAfter] function, and finally returns
+     * the [T] result.
+     */
     override fun deserialize(source: Task, runAfter: (source: Task, destination: T) -> Unit): T {
         return deserialize(source).apply { runAfter(source, this@apply) }
     }
 
+    /**
+     * Returns a [CustomField] list containing all properties of the [T] receiver object converted by this
+     * [AsanaTaskSerializer]'s custom field [context].
+     */
     private fun T.convertPropertiesToCustomFields(): List<CustomField> {
         return strategy.properties.entries.map { entry -> this.buildCustomFieldFrom(entry.key, entry.value) }
     }
 
+    /**
+     * Returns a single [CustomField] that represents the given [property] of the [T] receiver object, using that
+     * property's [AsanaCustomField] annotation.
+     *
+     * @see AsanaCustomField
+     * @throws CustomFieldException If no custom field in this object's [context] matches the name supplied in the
+     *                              given property's [AsanaCustomField] annotation declaration.
+     */
     private fun T.buildCustomFieldFrom(propertyName: String, property: KProperty1<out Any, *>): CustomField {
         val customField = context[propertyName] ?: throw CustomFieldException(
             "No custom field in $context\n\tmatches name=$property"

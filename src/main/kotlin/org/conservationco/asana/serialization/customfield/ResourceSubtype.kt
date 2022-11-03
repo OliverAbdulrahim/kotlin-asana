@@ -8,11 +8,19 @@ import org.conservationco.asana.util.multiEnumToGids
 import org.conservationco.asana.util.stringValue
 import kotlin.reflect.full.primaryConstructor
 
+/**
+ * Sealed hierarchy encapsulating operations on [CustomField] objects based on their [CustomField.resourceSubtype].
+ *
+ * @property context The custom field supplier for this object. This is needed to find possible values for "`enum`" and
+ *                   "`multi_enum`" type fields, which are Project- or Workspace-dependent. Other types, such as
+ *                   "`number`" and "`text`" are context-independent, and thus default to a non-operative context.
+ */
 sealed class ResourceSubtype (
     protected val context: CustomFieldContext = NoOpCustomFieldContext,
 ) {
 
     companion object {
+        /** Stores type names (in `snake_case`) to their representative constructor. */
         val types = ResourceSubtype::class.sealedSubclasses
             .associateBy(
                 { it.simpleName!!.camelToSnakeCase() },
@@ -20,8 +28,25 @@ sealed class ResourceSubtype (
             )
     }
 
+    /**
+     * Converts the given [customField] into its representative globally unique identifier(s), returning either a
+     * `String?` or `Array<String>?`.
+     */
     abstract fun convertToGids(customField: CustomField): Any?
+
+    /**
+     * Converts the given [customField] into its representative data.
+     *
+     * [CustomField] objects store their true value in any number of internal fields, such as (non-exhaustive list):
+     *   - [CustomField.textValue] for "`text`" resources
+     *   - [CustomField.enumValue] for "`enum`" resources
+     *   - [CustomField.multiEnumValues] for "`multi_enum`" resources
+     */
     abstract fun convertToData(customField: CustomField): Any?
+
+    /**
+     * Applies the given [value] to the specified [customField].
+     */
     abstract fun applyDataTo(customField: CustomField, value: Any?)
 
     class Number : ResourceSubtype() {

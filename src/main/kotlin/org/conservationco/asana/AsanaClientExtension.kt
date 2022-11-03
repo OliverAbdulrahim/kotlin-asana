@@ -18,6 +18,10 @@ class AsanaClientExtension(private val config: AsanaConfig) {
 
 // Task extension functions
 
+    fun task(taskGid: String): Task = Task().initResource(taskGid)
+
+    inline fun <R> task(taskGid: String, block: Task.() -> R): R = task(taskGid).block()
+
     fun Task.delete(): Task {
         return requestExecutor.tasks.deleteTask(this)
     }
@@ -149,5 +153,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
             
         """.trimIndent())
     }
+
+    private fun <T : Resource> T.initResource(gid: String): T = apply { this.gid = gid }
 
 }

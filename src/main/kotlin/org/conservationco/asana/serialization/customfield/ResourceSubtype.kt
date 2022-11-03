@@ -22,12 +22,12 @@ sealed class ResourceSubtype (
 
     abstract fun convertToGids(customField: CustomField): Any?
     abstract fun convertToData(customField: CustomField): Any?
-    abstract fun applyDataTo(customField: CustomField, fieldName: String, value: Any?)
+    abstract fun applyDataTo(customField: CustomField, value: Any?)
 
     class Number : ResourceSubtype() {
         override fun convertToGids(customField: CustomField): String = customField.numberValue.orEmpty()
         override fun convertToData(customField: CustomField): String = customField.numberValue.orEmpty()
-        override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) {
+        override fun applyDataTo(customField: CustomField, value: Any?) {
             customField.numberValue = value.stringValue().ifEmpty { "0" }
         }
     }
@@ -35,7 +35,7 @@ sealed class ResourceSubtype (
     class Text : ResourceSubtype() {
         override fun convertToGids(customField: CustomField): String = customField.textValue.orEmpty()
         override fun convertToData(customField: CustomField): String = customField.textValue.orEmpty()
-        override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) {
+        override fun applyDataTo(customField: CustomField, value: Any?) {
             customField.textValue = value.stringValue()
         }
     }
@@ -43,7 +43,7 @@ sealed class ResourceSubtype (
     class Enum(context: CustomFieldContext) : ResourceSubtype(context) {
         override fun convertToGids(customField: CustomField): String = customField.enumValue.gid
         override fun convertToData(customField: CustomField): String = customField.enumValue.name
-        override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) {
+        override fun applyDataTo(customField: CustomField, value: Any?) {
             customField.enumValue = context.optionForName(customField.name, value as String?)
         }
     }
@@ -53,22 +53,22 @@ sealed class ResourceSubtype (
         override fun convertToData(customField: CustomField): Array<String> {
             return customField.multiEnumValues.map { option -> option.name }.toTypedArray()
         }
-        override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) {
+        override fun applyDataTo(customField: CustomField, value: Any?) {
             val selectedMultiEnumNames = value as Array<*>?
-            customField.multiEnumValues = selectedMultiEnumNames?.map { context.optionForName(fieldName, it as String) }
+            customField.multiEnumValues = selectedMultiEnumNames?.map { context.optionForName(customField.name, it as String) }
         }
     }
 
     class People(context: CustomFieldContext) : ResourceSubtype(context) {
         override fun convertToGids(customField: CustomField): Any = throwFor(this)
         override fun convertToData(customField: CustomField): Any = throwFor(this)
-        override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) = throwFor(this)
+        override fun applyDataTo(customField: CustomField, value: Any?) = throwFor(this)
     }
 
     class Date : ResourceSubtype() {
         override fun convertToGids(customField: CustomField): Any = throwFor(this)
         override fun convertToData(customField: CustomField): Any = throwFor(this)
-        override fun applyDataTo(customField: CustomField, fieldName: String, value: Any?) = throwFor(this)
+        override fun applyDataTo(customField: CustomField, value: Any?) = throwFor(this)
     }
 
     protected fun throwFor(type: ResourceSubtype): Nothing = throw UnsupportedOperationException("""

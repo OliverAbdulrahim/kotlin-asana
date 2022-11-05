@@ -1,0 +1,105 @@
+# Deploys static Dokka content to GitHub Pages
+
+name: Generate Dokka and deploy to Github Pages
+
+env:
+  path: "target/dokka"
+  retention-days: "1"
+
+on:
+  # Allow to run from Actions tab
+  workflow_dispatch:
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out this repo
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Generate documentation static files
+      - name: Generate Dokka
+        run: mvn --batch-mode dokka:dokka
+
+      # Package Dokka output into tar
+      - name: Archive artifact (Linux)
+        shell: sh
+        if: runner.os == 'Linux'
+        run: |
+          tar \
+            --dereference --hard-dereference \
+            --directory "$INPUT_PATH" \
+            -cvf "$RUNNER_TEMP/artifact.tar" \
+            --exclude=.git \
+            --exclude=.github \
+            .
+        env:
+          INPUT_PATH: ${{ env.path }}
+
+      # Package Dokka output into tar
+      - name: Archive artifact (macOS)
+        shell: sh
+        if: runner.os == 'macOS'
+        run: |
+          gtar \
+            --dereference --hard-dereference \
+            --directory "$INPUT_PATH" \
+            -cvf "$RUNNER_TEMP/artifact.tar" \
+            --exclude=.git \
+            --exclude=.github \
+            .
+        env:
+          INPUT_PATH: ${{ env.path }}
+
+      # Package Dokka output into tar
+      - name: Archive artifact (Windows)
+        shell: bash
+        if: runner.os == 'Windows'
+        run: |
+          tar \
+            --dereference --hard-dereference \
+            --directory "$INPUT_PATH" \
+            -cvf "$RUNNER_TEMP\artifact.tar" \
+            --exclude=.git \
+            --exclude=.github \
+            --force-local \
+            "."
+        env:
+          INPUT_PATH: ${{ env.path }}
+
+      # Package Dokka tar artifact into gzip
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: ${{ env.retention-days }}
+
+  deploy:
+    needs: build
+
+    permissions:
+      # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    # Specify runner + deploy to pages environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+        with:
+          preview: true

@@ -1,0 +1,48 @@
+# Build and test this project with Maven, caching dependencies to improve the workflow execution time
+# Also generate and upload a test report
+
+name: Build, test, and report results with Maven
+
+# Run when main is updated. Also allow to run from Actions tab
+on:
+  push:
+    branches: 'main'
+  pull_request:
+    branches: 'main'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out this repo
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Specify JDK and cache Maven dependencies
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      # Build project with Maven
+      - name: Install with Maven
+        run: mvn --batch-mode -DskipTests package
+
+      # Run tests
+      - name: Run tests with Maven
+        run: mvn --batch-mode -Dmaven.test.failure.ignore=true test
+
+      # Generate test report
+      - name: Generate test report
+        uses: dorny/test-reporter@v1
+        # Run even if the previous step failed
+        if: always()
+        with:
+          name: kotlin-asana test report
+          path: target/surefire-reports/*.xml
+          reporter: java-junit
+          fail-on-error: true

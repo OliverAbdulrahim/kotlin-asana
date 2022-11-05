@@ -121,6 +121,62 @@ internal class AsanaTaskSerializerTest {
         assertContentEquals(expectedValue, actualValue)
     }
 
+    @Test
+    fun `serialization of Task name`() {
+        // Given
+        val person = Person(name = "Somebody that I used to know")
+        val task = underTest.serialize(person)
+
+        // When
+        val expectedName = person.name
+        val actualName = task.name
+
+        // Then
+        assertEquals(expectedName, actualName)
+    }
+
+    @Test
+    fun `deserialization of Task name`() {
+        // Given
+        val task = Task().apply { name = "Somebody that I used to know" }
+        val person = underTest.deserialize(task)
+
+        // When
+        val expectedName = task.name
+        val actualName = person.name
+
+        // Then
+        assertEquals(expectedName, actualName)
+    }
+
+    @Test
+    fun `serialization of Task gid`() {
+        // Given
+        val person = Person(id = "2147483648")
+        val task = underTest.serialize(person)
+
+        // When
+        val expectedGid = person.id
+        val actualGid = task.gid
+
+        // Then
+        assertEquals(expectedGid, actualGid)
+    }
+
+    @Test
+    fun `deserialization of Task gid`() {
+        // Given
+        val task = Task().apply { gid = "2147483648" }
+        val person = underTest.deserialize(task)
+
+        // When
+        val expectedGid = task.gid
+        val actualGid = person.id
+
+        // Then
+        assertEquals(expectedGid, actualGid)
+    }
+
     private fun <T> assertForCustomFields(
         expectedCustomField: CustomField,
         expectedCustomFieldValue: T,

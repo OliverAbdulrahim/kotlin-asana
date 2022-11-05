@@ -62,7 +62,7 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
      */
     override fun deserialize(source: Task): T {
         val destination: T = `class`.createInstance()
-        source.customFields.forEach {
+        source.customFields?.forEach {
             val property = strategy[it.name]
             if (property != null) setProperty(destination, property, it.inferValue(context))
         }

@@ -36,6 +36,15 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     inline fun <R> task(taskGid: String, block: Task.() -> R): R = task(taskGid).block()
 
     /**
+     * Returns the expanded version of this task, including attachments depending on the [includeAttachments] flag.
+     */
+    fun Task.get(includeAttachments: Boolean =  false): Task {
+        val task = requestExecutor.tasks.getTask(this)
+        if (includeAttachments) task.attachments = task.getAttachments()
+        return task
+    }
+
+    /**
      * Deletes this task, returning an empty [Task] response.
      */
     fun Task.delete(): Task {
@@ -78,7 +87,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      * Returns a [Collection] of [Project] objects that represent where this task is a member.
      */
     fun Task.getProjects(): Collection<Project> {
-        return requestExecutor.tasks.getProjects(gid)
+        return requestExecutor.tasks.getProjects(this)
     }
 
 // Project extension functions

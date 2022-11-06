@@ -63,9 +63,14 @@ class RequestExecutor(
             return request.execute()
         }
 
-        fun getProjects(taskGid: String): List<Project> {
-            val request = client.projects.getProjectsForTask(taskGid)
+        fun getProjects(task: Task): List<Project> {
+            val request = client.projects.getProjectsForTask(task.gid)
             return executeWithQueriesAndPaginate(request)
+        }
+
+        fun getTask(task: Task): Task {
+            val request = client.tasks.getTask(task.gid)
+            return request.execute()
         }
     }
 

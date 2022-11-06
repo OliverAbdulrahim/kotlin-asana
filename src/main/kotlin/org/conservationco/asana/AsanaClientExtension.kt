@@ -74,6 +74,13 @@ class AsanaClientExtension(private val config: AsanaConfig) {
         attachments.forEach { createAttachment(it) }
     }
 
+    /**
+     * Returns a [Collection] of [Project] objects that represent where this task is a member.
+     */
+    fun Task.getProjects(): Collection<Project> {
+        return requestExecutor.tasks.getProjects(gid)
+    }
+
 // Project extension functions
 
     /**

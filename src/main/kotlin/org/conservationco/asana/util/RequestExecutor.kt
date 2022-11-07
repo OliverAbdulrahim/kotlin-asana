@@ -35,7 +35,7 @@ class RequestExecutor(
             val request = client.tasks.update(task.gid)
             return executeDataRequestWith(
                 request,
-                "custom_fields" to task.customFields.mapGidsToValues(context)
+                "custom_fields" to task.customFields.mapToGids(context)
             )
         }
 
@@ -43,7 +43,7 @@ class RequestExecutor(
             val request = client.tasks.createTask()
             return executeDataRequestWith(
                 request,
-                "custom_fields" to task.customFields.mapGidsToValues(context),
+                "custom_fields" to task.customFields.mapToGids(context),
                 "projects" to task.projects.toGidArray(),
                 "name" to task.name,
             )

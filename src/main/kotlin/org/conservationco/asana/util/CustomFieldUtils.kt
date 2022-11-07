@@ -18,6 +18,8 @@ import org.conservationco.asana.serialization.customfield.context.CustomFieldCon
  */
 fun CustomField.inferValue(context: CustomFieldContext): Any? = asResourceSubtype(context).convertToData(this)
 
+fun CustomField.inferGid(context: CustomFieldContext): Any? = asResourceSubtype(context).convertToGids(this)
+
 fun CustomField.isMultiEnum(): Boolean = this.resourceSubtype == "multi_enum"
 
 fun CustomField.isEnum(): Boolean = this.resourceSubtype == "enum"
@@ -49,8 +51,8 @@ internal fun customFieldOf(
     this.enumOptions = enumOptions
 }
 
-internal fun Collection<CustomField>.mapGidsToValues(context: CustomFieldContext): Map<String, Any?> =
-    associateBy({ it.gid }, { it.inferValue(context) })
+internal fun Collection<CustomField>.mapToGids(context: CustomFieldContext): Map<String, Any?> =
+    associateBy({ it.gid }, { it.inferGid(context) })
 
 internal fun Collection<Resource>.toGidArray(): Array<String> = map { it.gid }.toTypedArray()
 

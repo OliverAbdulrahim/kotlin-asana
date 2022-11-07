@@ -44,6 +44,7 @@ class RequestExecutor(
             return executeDataRequestWith(
                 request,
                 "custom_fields" to task.customFields.mapGidsToValues(context),
+                "projects" to task.projects,
                 "name" to task.name,
             )
         }

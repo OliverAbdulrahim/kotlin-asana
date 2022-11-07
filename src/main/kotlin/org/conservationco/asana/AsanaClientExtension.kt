@@ -130,6 +130,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      * Creates the given [task] on this [Project], returning a complete response object with the created task's `gid`.
      */
     fun Project.createTask(task: Task): Task {
+        task.projects = listOf(this)
         val created = requestExecutor.tasks.createTask(task, getContextFor(this))
         if (task.attachments != null) task.attachments.forEach { created.createAttachment(it) }
         return created

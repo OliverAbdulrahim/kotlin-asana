@@ -66,8 +66,8 @@ sealed class ResourceSubtype (
     }
 
     class Enum(context: CustomFieldContext) : ResourceSubtype(context) {
-        override fun convertToGids(customField: CustomField): String = customField.enumValue.gid
-        override fun convertToData(customField: CustomField): String = customField.enumValue.name
+        override fun convertToGids(customField: CustomField): String = customField.enumValue?.gid.orEmpty()
+        override fun convertToData(customField: CustomField): String = customField.enumValue?.name.orEmpty()
         override fun applyDataTo(customField: CustomField, value: Any?) {
             customField.enumValue = context.optionForName(customField.name, value as String?)
         }

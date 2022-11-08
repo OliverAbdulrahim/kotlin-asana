@@ -266,10 +266,13 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      *    }
      * ```
      */
-    fun <R : AsanaSerializable<R>> Project.convertTasksToListOf(toClass: KClass<R>): List<R> {
+    fun <R : AsanaSerializable<R>> Project.convertTasksToListOf(
+        toClass: KClass<R>,
+        includeAttachments: Boolean = false
+    ): List<R> {
         checkConfigFieldsForSerializing()
         return this
-            .getTasks()
+            .getTasks(includeAttachments)
             .convertToListOfWithContext(toClass, getContextFor(this))
     }
 

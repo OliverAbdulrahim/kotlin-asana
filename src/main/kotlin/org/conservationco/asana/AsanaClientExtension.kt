@@ -90,6 +90,10 @@ class AsanaClientExtension(private val config: AsanaConfig) {
         return requestExecutor.tasks.getProjects(this)
     }
 
+    fun <R : AsanaSerializable<R>> Task.andBackTo(toClass: KClass<R>): R {
+        return this.convertTo(toClass)
+    }
+
 // Project extension functions
 
     /**
@@ -253,46 +257,30 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     }
 
     /**
-     * Returns the result of converting this [AsanaSerializable] to a [Task] with the given resource's [context]
-     * (such as a [Project] or [Workspace]).
+     * Converts all Tasks belonging to this project into objects of the given [toClass], then applies the given
+     * [runAfterConverting] function, then finally returns the [List] result.
      *
-     * It's recommended that you call this function within the context of a resource. For example:
+     * Example usage:
      * ```kotlin
-     *    asanaContext {
-     *        project("12345") { // this = an instance of project
-     *            val person: Person = ...
-     *            val task: Task = person.convertToTask(this)   // <- context = this = this@project
-     *        }
+     *    val people: List<People> = asanaContext {
+     *        project("12345").convertTasksToListOf(Person::class)
      *    }
      * ```
      */
     fun <R : AsanaSerializable<R>> Project.convertTasksToListOf(
         toClass: KClass<R>,
-        includeAttachments: Boolean = false
+        includeAttachments: Boolean = false,
+        runAfterConverting: (source: Task, destination: R) -> Unit = {_, _ -> }
     ): List<R> {
         checkConfigFieldsForSerializing()
         return this
             .getTasks(includeAttachments)
-            .convertToListOfWithContext(toClass, getContextFor(this))
+            .convertToListOf(toClass, this, runAfterConverting)
     }
-
-    /**
-     * Returns the result of converting this `List` of [Task] objects to a `List` of objects of the given [toClass].
-     */
-    fun <R : AsanaSerializable<R>> List<Task>.convertToListOfWithContext(
-        toClass: KClass<R>,
-        context: CustomFieldContext
-    ): List<R> {
-        checkConfigFieldsForSerializing()
-        if (isEmpty()) return emptyList()
-        val converter = AsanaTaskSerializer(toClass, context)
-        return map { converter.deserialize(it) }.toList()
-    }
-
 
     /**
      * Returns the result of converting this `List` of [AsanaSerializable] objects into a `List` of [Task] objects,
-     * using the given resource as a [context] (such as a [Project] or [Workspace]).
+     * using the given [context] resource (such as `Project` or `Workspace`).
      *
      * It's recommended that you call this function within the context of a resource. For example:
      * ```kotlin
@@ -304,14 +292,32 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      *    }
      * ```
      */
-    fun <R : AsanaSerializable<R>> List<R>.convertToTaskList(context: Resource): List<Task> {
+    fun <R : AsanaSerializable<R>> List<R>.convertToTaskList(
+        context: Resource,
+        runAfterConverting: (source: R, destination: Task) -> Unit = {_, _ -> }
+    ): List<Task> {
         checkConfigFieldsForSerializing()
         if (isEmpty()) return emptyList()
         val converter = AsanaTaskSerializer(this[0]::class, getContextFor(context))
-        return this.map { converter.serialize(it) }.toList()
+        return this.map { converter.serialize(it, runAfterConverting) }.toList()
     }
 
 // Internal helper functions
+
+    /**
+     * Converts each `Task` in this `List<Task>` into objects of the given [toClass] within the context of the given
+     * [resource] (such as `Task`, `Project`, or `Workspace`), then applies the [runAfterConverting] function, then
+     * finally returns the [List] result.
+     */
+    private fun <R : AsanaSerializable<R>> List<Task>.convertToListOf(
+        toClass: KClass<R>,
+        resource: Resource,
+        runAfterConverting: (source: Task, destination: R) -> Unit = {_, _ -> }
+    ): List<R> {
+        if (isEmpty()) return emptyList()
+        val converter = AsanaTaskSerializer(toClass, getContextFor(resource))
+        return map { converter.deserialize(it, runAfterConverting) }.toList()
+    }
 
     /**
      * Detects and returns the [CustomFieldContext] for the given [resource]. If no context exists within this

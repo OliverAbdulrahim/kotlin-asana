@@ -287,7 +287,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      *    asanaContext {
      *        project("12345") { // this = an instance of project
      *            val people: List<Person> = ...
-     *            val tasks: List<Task> = people.convertToTaskList(this)   // <- context = this = this@project
+     *            val tasks: List<Task> = people.convertToTaskList(this)   // <- context = this: Project
      *        }
      *    }
      * ```

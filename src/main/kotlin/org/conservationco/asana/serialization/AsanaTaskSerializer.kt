@@ -41,11 +41,7 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
      * Serializes the given [source] ([T]) object, returning the [Task] result.
      */
     override fun serialize(source: T): Task {
-        return Task().apply {
-            customFields = source.convertPropertiesToCustomFields()
-            name = source.name
-            gid = source.id
-        }
+        return Task().apply { customFields = source.convertPropertiesToCustomFields() }
     }
 
     /**
@@ -65,8 +61,6 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
                 val property = strategy[it.name]
                 if (property != null) setProperty(this@apply, property, it.inferValue(context))
             }
-            name = source.name.orEmpty()
-            id = source.gid.orEmpty()
         }
     }
 

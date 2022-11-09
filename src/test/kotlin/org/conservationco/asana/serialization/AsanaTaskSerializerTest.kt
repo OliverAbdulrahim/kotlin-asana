@@ -122,24 +122,10 @@ internal class AsanaTaskSerializerTest {
     }
 
     @Test
-    fun `serialization of Task name`() {
-        // Given
-        val person = Person(name = "Somebody that I used to know")
-        val task = underTest.serialize(person)
-
-        // When
-        val expectedName = person.name
-        val actualName = task.name
-
-        // Then
-        assertEquals(expectedName, actualName)
-    }
-
-    @Test
-    fun `deserialization of Task name`() {
+    fun `deserialization of Task with custom logic running after`() {
         // Given
         val task = Task().apply { name = "Somebody that I used to know" }
-        val person = underTest.deserialize(task)
+        val person = underTest.deserialize(task) { source, destination ->  destination.name = source.name }
 
         // When
         val expectedName = task.name
@@ -150,28 +136,14 @@ internal class AsanaTaskSerializerTest {
     }
 
     @Test
-    fun `serialization of Task gid`() {
+    fun `serialization of Task with custom logic running after`() {
         // Given
         val person = Person(id = "2147483648")
-        val task = underTest.serialize(person)
+        val task = underTest.serialize(person) { source, destination -> destination.gid = source.id  }
 
         // When
         val expectedGid = person.id
         val actualGid = task.gid
-
-        // Then
-        assertEquals(expectedGid, actualGid)
-    }
-
-    @Test
-    fun `deserialization of Task gid`() {
-        // Given
-        val task = Task().apply { gid = "2147483648" }
-        val person = underTest.deserialize(task)
-
-        // When
-        val expectedGid = task.gid
-        val actualGid = person.id
 
         // Then
         assertEquals(expectedGid, actualGid)

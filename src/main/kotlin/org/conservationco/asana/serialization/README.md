@@ -111,19 +111,22 @@ Before we dive into details, here's what we'll do:
 
 #### Updated code example (Kotlin)
 ```kotlin
-class Person(
-    override var id: String = "",
-    override var name: String = "",
-    @AsanaCustomField("Favorite dessert") var favoriteDessert: String = "",
-    @AsanaCustomField("Favorite season") var favoriteSeason: String = "",
-    @AsanaCustomField("Languages spoken") var languagesSpoken: Array<String> = emptyArray(),
-) : AsanaSerializable<Person>
+class Person : AsanaSerializable<Person> {
+   lateinit var id: String = ""
+   lateinit var name: String = ""
+   @AsanaCustomField("Favorite dessert") lateinit var favoriteDessert: String
+   @AsanaCustomField("Favorite season")  lateinit var favoriteSeason: String
+   @AsanaCustomField("Languages spoken") lateinit var languagesSpoken: Array<String>
+}
 
 // elsewhere, in a land far away
 val projectGid = "12345"
 val people: List<Person> = asanaContext {
    project(projectGid) {
-      convertTasksToListOf(Person::class)
+      convertTasksToListOf(Person::class) { source: Task, destination: Person ->
+         destination.name = source.name
+         destination.id = source.gid
+      }
    }
 }
 people.forEach { person -> println("${person.name} loves eating ${person.favoriteDessert}!")}
@@ -134,10 +137,11 @@ people.forEach { person -> println("${person.name} loves eating ${person.favorit
    * You could also specify your own client!
 2. Sets up and executes your requests for you
    * Even handles pagination; whether you have 1 task or 101+ tasks, you get them in the same way
-3. Converts your `Task`s into your custom objects, in this case, `Person`
+3. Maps your task's custom fields into your own object, in this case, `Person`
    * Your data is encapsulated properly and is easy to access
    * Types are preserved in object properties
-4. Provides a declarative, readable, Kotlin-idiomatic DSL for working with Asana resources
+   * Need to map other parts of a task, like name, id, and attachments? No problem, just tell `kotlin-asana` how
+4. Provides a declarative, readable, Kotlin-idiomatic way to work with Asana resources
 
 #### It gets better: turn your objects back into tasks 
 As easily as you converted `Person` into `Task`, you can also turn each `Person` object back into a `Task`! In a 

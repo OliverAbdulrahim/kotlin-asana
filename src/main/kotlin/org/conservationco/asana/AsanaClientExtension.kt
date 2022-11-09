@@ -90,7 +90,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
         return requestExecutor.tasks.getProjects(this)
     }
 
-    fun <R : AsanaSerializable<R>> Task.andBackTo(toClass: KClass<R>): R {
+    fun <R : AsanaSerializable<R>> Task.andBackTo(toClass: KClass<out R>): R {
         return this.convertTo(toClass)
     }
 
@@ -230,7 +230,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     /**
      * Returns the result of converting this [Task] to an object of the given [toClass].
      */
-    fun <R : AsanaSerializable<R>> Task.convertTo(toClass: KClass<R>): R {
+    fun <R : AsanaSerializable<R>> Task.convertTo(toClass: KClass<out R>): R {
         checkConfigFieldsForSerializing()
         return AsanaTaskSerializer(toClass, getContextFor(this))
             .deserialize(this)
@@ -268,7 +268,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      * ```
      */
     fun <R : AsanaSerializable<R>> Project.convertTasksToListOf(
-        toClass: KClass<R>,
+        toClass: KClass<out R>,
         includeAttachments: Boolean = false,
         runAfterConverting: (source: Task, destination: R) -> Unit = {_, _ -> }
     ): List<R> {
@@ -310,7 +310,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      * finally returns the [List] result.
      */
     private fun <R : AsanaSerializable<R>> List<Task>.convertToListOf(
-        toClass: KClass<R>,
+        toClass: KClass<out R>,
         resource: Resource,
         runAfterConverting: (source: Task, destination: R) -> Unit = {_, _ -> }
     ): List<R> {

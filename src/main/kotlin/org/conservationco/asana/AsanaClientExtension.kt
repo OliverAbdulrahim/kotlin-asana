@@ -38,7 +38,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     /**
      * Returns the expanded version of this task, including attachments depending on the [includeAttachments] flag.
      */
-    fun Task.get(includeAttachments: Boolean =  false): Task {
+    fun Task.get(includeAttachments: Boolean = false): Task {
         val task = requestExecutor.tasks.getTask(this)
         if (includeAttachments) task.attachments = task.getAttachments()
         return task
@@ -88,10 +88,6 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      */
     fun Task.getProjects(): Collection<Project> {
         return requestExecutor.tasks.getProjects(this)
-    }
-
-    fun <R : AsanaSerializable<R>> Task.andBackTo(toClass: KClass<out R>): R {
-        return this.convertTo(toClass)
     }
 
 // Project extension functions
@@ -228,12 +224,16 @@ class AsanaClientExtension(private val config: AsanaConfig) {
 // Type conversion functions
 
     /**
-     * Returns the result of converting this [Task] to an object of the given [toClass].
+     * Returns the result of converting this [Task] to an object of the given [toClass], optionally applying the given
+     * [runAfterConverting] function.
      */
-    fun <R : AsanaSerializable<R>> Task.convertTo(toClass: KClass<out R>): R {
+    fun <R : AsanaSerializable<R>> Task.convertTo(
+        toClass: KClass<out R>,
+        runAfterConverting: (source: Task, destination: R) -> Unit = {_, _ -> }
+    ): R {
         checkConfigFieldsForSerializing()
         return AsanaTaskSerializer(toClass, getContextFor(this))
-            .deserialize(this)
+            .deserialize(this, runAfterConverting)
     }
 
     /**
@@ -250,10 +250,13 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      *    }
      * ```
      */
-    fun <R : AsanaSerializable<R>> R.convertToTask(context: Resource): Task {
+    fun <R : AsanaSerializable<R>> R.convertToTask(
+        context: Resource,
+        runAfterConverting: (source: R, destination: Task) -> Unit = {_, _ -> }
+    ): Task {
         checkConfigFieldsForSerializing()
         return AsanaTaskSerializer(this::class, getContextFor(context))
-            .serialize(this)
+            .serialize(this, runAfterConverting)
     }
 
     /**

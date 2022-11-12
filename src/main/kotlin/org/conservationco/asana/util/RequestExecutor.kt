@@ -1,8 +1,9 @@
 package org.conservationco.asana.util
 
+import com.asana.errors.InvalidTokenError
 import com.asana.models.*
-import com.asana.requests.CollectionRequest
-import com.asana.requests.ItemRequest
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import org.conservationco.asana.AsanaConfig
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
 import java.time.LocalDate
@@ -21,6 +22,7 @@ class RequestExecutor(
     val tasks = Tasks()
     val projects = Projects()
     val workspaces = Workspaces()
+    val events = Events()
 
     /**
      * Container class for requests related to [Task] objects.
@@ -51,7 +53,7 @@ class RequestExecutor(
 
         fun getAttachment(task: Task): Collection<Attachment> {
             val request = client.attachments.getAttachmentsForObject(task.gid)
-            return executeWithQueriesAndPaginate(request, expanded = true)
+            return executeWithQueriesAndPaginate(request, true, config.fields)
         }
 
         fun createAttachment(task: Task, attachment: Attachment): Attachment {
@@ -66,7 +68,7 @@ class RequestExecutor(
 
         fun getProjects(task: Task): List<Project> {
             val request = client.projects.getProjectsForTask(task.gid)
-            return executeWithQueriesAndPaginate(request)
+            return executeWithQueriesAndPaginate(request, config.expandedResponses, config.fields)
         }
 
         fun getTask(task: Task): Task {
@@ -81,12 +83,18 @@ class RequestExecutor(
     inner class Projects {
         fun getTasksPaginated(project: Project, createdSince: LocalDate = LocalDate.EPOCH): List<Task> {
             val request = client.tasks.getTasksForProject(project.gid, createdSince.toString())
-            return executeWithQueriesAndPaginate(request)
+            return executeWithQueriesAndPaginate(request, config.expandedResponses, config.fields)
         }
 
         fun getCustomFieldSettingsPaginated(project: Project): List<CustomFieldSetting> {
             val request = client.customFieldSettings.findByProject(project.gid)
             return collectPaginations(request)
+        }
+
+        fun getNewTasksPaginated(project: Project): Collection<Task> {
+            return events
+                .getEventStreamPaginated(project)
+                .extractTasks()
         }
     }
 
@@ -126,34 +134,34 @@ class RequestExecutor(
         }
     }
 
-// Request execution / pagination handling functions
+    /**
+     * Container class for requests related to [Event] resources.
+     */
+    inner class Events {
+        /**
+         * Stores [Resource.gid] `String`s to the last known sync token for that resource.
+         */
+        private val resourcesToSyncTokens = HashMap<String, String>()
 
-    private fun <T> executeDataRequestWith(request: ItemRequest<T>, vararg dataParameters: Pair<String, Any>): T {
-        request.data.appendAll(dataParameters)
-        return request.execute()
-    }
+        fun getEventStreamPaginated(resource: Resource): Collection<JsonElement> {
+            fun eventRequest(token: String?) = client.events.getEvents(token, resource.gid)
 
-    private fun <T> executeQueryRequestWith(request: ItemRequest<T>, vararg queryParameters: Pair<String, Any>): T {
-        request.query.appendAll(queryParameters)
-        return request.execute()
-    }
+            val potentialToken = resourcesToSyncTokens[resource.gid]
+            val request = eventRequest(potentialToken)
 
-    private fun <T> executeWithQueriesAndPaginate(
-        request: CollectionRequest<T>,
-        expanded: Boolean = config.expandedResponses,
-        vararg fields: String = config.fields
-    ): List<T> {
-        if (expanded) request.query["opt_expand"] = "."
-        else request.query["opt_fields"] = fields.joinToString(separator = ",")
-        return collectPaginations(request)
-    }
+            val response = try {
+                collectPaginationsRaw(request)
+            } catch (tokenError: InvalidTokenError) {
+                val newToken = tokenError.sync
+                val newRequest = eventRequest(newToken)
+                collectPaginationsRaw(newRequest)
+            }
 
-    private fun <T> collectPaginations(request: CollectionRequest<T>): List<T> {
-        val result = request.executeRaw()
-        return if (result.nextPage != null) {
-            request.query["offset"] = result.nextPage.offset
-            result.data + collectPaginations(request)
-        } else result.data
+            val nextToken = response.sync
+            resourcesToSyncTokens[resource.gid] = nextToken
+
+            return response.data
+        }
     }
 
 }

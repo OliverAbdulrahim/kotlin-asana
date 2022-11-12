@@ -155,6 +155,15 @@ class AsanaClientExtension(private val config: AsanaConfig) {
         return requestExecutor.projects.getCustomFieldSettingsPaginated(this).map { it.customField }
     }
 
+    /**
+     * Returns a collection of all the new tasks on this project.
+     */
+    fun Project.getNewTasks(includeAttachments: Boolean = false): Collection<Task> {
+        return requestExecutor.projects
+            .getNewTasksPaginated(this)
+            .map { it.get(includeAttachments) }
+    }
+
 // Workspace extension functions
 
     /**

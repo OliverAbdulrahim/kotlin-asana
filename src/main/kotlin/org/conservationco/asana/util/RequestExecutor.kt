@@ -3,7 +3,6 @@ package org.conservationco.asana.util
 import com.asana.errors.InvalidTokenError
 import com.asana.models.*
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import org.conservationco.asana.AsanaConfig
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
 import java.time.LocalDate

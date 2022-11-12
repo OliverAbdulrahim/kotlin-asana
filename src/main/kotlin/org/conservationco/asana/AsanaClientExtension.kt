@@ -314,14 +314,12 @@ class AsanaClientExtension(private val config: AsanaConfig) {
         return this.map { converter.serialize(it, runAfterConverting) }.toList()
     }
 
-// Internal helper functions
-
     /**
      * Converts each `Task` in this `List<Task>` into objects of the given [toClass] within the context of the given
      * [resource] (such as `Task`, `Project`, or `Workspace`), then applies the [runAfterConverting] function, then
      * finally returns the [List] result.
      */
-    private fun <R : AsanaSerializable<R>> List<Task>.convertToListOf(
+    fun <R : AsanaSerializable<R>> List<Task>.convertToListOf(
         toClass: KClass<out R>,
         resource: Resource,
         runAfterConverting: (source: Task, destination: R) -> Unit = {_, _ -> }
@@ -330,6 +328,8 @@ class AsanaClientExtension(private val config: AsanaConfig) {
         val converter = AsanaTaskSerializer(toClass, getContextFor(resource))
         return map { converter.deserialize(it, runAfterConverting) }.toList()
     }
+
+// Internal helper functions
 
     /**
      * Detects and returns the [CustomFieldContext] for the given [resource]. If no context exists within this

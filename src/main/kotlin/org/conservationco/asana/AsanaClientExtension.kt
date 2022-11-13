@@ -156,9 +156,9 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     }
 
     /**
-     * Returns a collection of all the new tasks on this project.
+     * Returns a `List` of all the new tasks on this project.
      */
-    fun Project.getNewTasks(includeAttachments: Boolean = false): Collection<Task> {
+    fun Project.getNewTasks(includeAttachments: Boolean = false): List<Task> {
         return requestExecutor.projects
             .getNewTasksPaginated(this)
             .map { it.get(includeAttachments) }
@@ -311,7 +311,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
         checkConfigFieldsForSerializing()
         if (isEmpty()) return emptyList()
         val converter = AsanaTaskSerializer(this[0]::class, getContextFor(context))
-        return this.map { converter.serialize(it, runAfterConverting) }.toList()
+        return this.map { converter.serialize(it, runAfterConverting) }
     }
 
     /**
@@ -326,7 +326,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     ): List<R> {
         if (isEmpty()) return emptyList()
         val converter = AsanaTaskSerializer(toClass, getContextFor(resource))
-        return map { converter.deserialize(it, runAfterConverting) }.toList()
+        return map { converter.deserialize(it, runAfterConverting) }
     }
 
 // Internal helper functions

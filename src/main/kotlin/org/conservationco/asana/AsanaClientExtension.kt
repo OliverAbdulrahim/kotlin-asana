@@ -164,6 +164,13 @@ class AsanaClientExtension(private val config: AsanaConfig) {
             .map { it.get(includeAttachments) }
     }
 
+    /**
+     * Returns a count of the tasks associated with this project.
+     */
+    fun Project.getTaskCount(): Int {
+        return requestExecutor.projects.getTaskCount(this)
+    }
+
 // Workspace extension functions
 
     /**

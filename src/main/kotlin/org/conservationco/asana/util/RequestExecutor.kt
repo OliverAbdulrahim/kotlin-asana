@@ -95,6 +95,14 @@ class RequestExecutor(
                 .getEventStreamPaginated(project)
                 .extractTasks()
         }
+
+        fun getTaskCount(project: Project): Int {
+            val request = client.projects.getTaskCountsForProject(project.gid)
+            val taskCountField = "num_tasks"
+            return executeQueryRequestWith(request, "opt_fields" to taskCountField)
+                .asJsonObject[taskCountField]
+                .asInt
+        }
     }
 
     /**

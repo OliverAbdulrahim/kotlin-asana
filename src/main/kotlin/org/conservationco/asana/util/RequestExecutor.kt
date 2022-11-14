@@ -52,7 +52,8 @@ class RequestExecutor(
 
         fun getAttachment(task: Task): Collection<Attachment> {
             val request = client.attachments.getAttachmentsForObject(task.gid)
-            return executeWithQueriesAndPaginate(request, true, config.fields)
+            return executeWithQueriesAndPaginate(request, config.expandedResponses, config.fields)
+                .map(::transformToPermanentUrl)
         }
 
         fun createAttachment(task: Task, attachment: Attachment): Attachment {

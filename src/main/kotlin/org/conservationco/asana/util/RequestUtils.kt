@@ -66,3 +66,10 @@ internal fun Collection<JsonElement>.extractTasks(): Collection<Task> {
     }
     return gidsToTasks.values
 }
+
+internal fun transformToPermanentUrl(attachment: Attachment): Attachment = Attachment().apply {
+    gid = attachment.gid
+    name = attachment.name
+    parent = attachment.parent
+    downloadUrl = URL("https://app.asana.com/app/asana/-/get_asset?asset_id=${attachment.gid}")
+}

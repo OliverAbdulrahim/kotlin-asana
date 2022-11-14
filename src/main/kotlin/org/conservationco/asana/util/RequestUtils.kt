@@ -1,11 +1,13 @@
 package org.conservationco.asana.util
 
+import com.asana.models.Attachment
 import com.asana.models.ResultBodyCollection
 import com.asana.models.Task
 import com.asana.requests.CollectionRequest
 import com.asana.requests.ItemRequest
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import java.net.URL
 
 internal fun <T> executeDataRequestWith(
     request: ItemRequest<T>,

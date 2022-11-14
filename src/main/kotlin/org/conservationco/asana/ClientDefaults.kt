@@ -1,6 +1,7 @@
 package org.conservationco.asana
 
 import com.asana.Client
+import org.conservationco.asana.extensions.AsanaClientExtension
 
 object ClientDefaults {
     val CONFIG by lazy { AsanaConfig() }

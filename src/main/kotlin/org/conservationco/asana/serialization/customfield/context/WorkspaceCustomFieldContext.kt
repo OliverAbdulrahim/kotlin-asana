@@ -2,7 +2,7 @@ package org.conservationco.asana.serialization.customfield.context
 
 import com.asana.models.CustomField
 import com.asana.models.Workspace
-import org.conservationco.asana.AsanaClientExtension
+import org.conservationco.asana.extensions.AsanaClientExtension
 import org.conservationco.asana.asanaContext
 
 class WorkspaceCustomFieldContext(

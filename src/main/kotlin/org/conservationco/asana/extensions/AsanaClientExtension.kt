@@ -1,6 +1,7 @@
-package org.conservationco.asana
+package org.conservationco.asana.extensions
 
 import com.asana.models.*
+import org.conservationco.asana.AsanaConfig
 import org.conservationco.asana.serialization.AsanaSerializable
 import org.conservationco.asana.serialization.AsanaTaskSerializer
 import org.conservationco.asana.serialization.customfield.CustomFieldException

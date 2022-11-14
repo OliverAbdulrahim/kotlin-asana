@@ -1,5 +1,7 @@
 package org.conservationco.asana
 
+import org.conservationco.asana.extensions.AsanaClientExtension
+
 /**
  * Returns the result of applying the given [block] to the given [clientExtension].
  *

@@ -1,6 +1,7 @@
 package org.conservationco.asana
 
 import com.asana.Client
+import org.conservationco.asana.exceptions.NoSuppliedAccessTokenException
 import org.conservationco.asana.extensions.AsanaClientExtension
 
 object ClientDefaults {
@@ -9,7 +10,7 @@ object ClientDefaults {
     val CLIENT_EXT by lazy { AsanaClientExtension(CONFIG) }
 
     private fun getAccessTokenFromEnv(): String {
-        return System.getenv("asana_access_token") ?: throw NoSuchElementException("""
+        return System.getenv("asana_access_token") ?: throw NoSuppliedAccessTokenException("""
             You must pass the "asana_access_token" environment variable when using the default client.
         """.trimIndent())
     }

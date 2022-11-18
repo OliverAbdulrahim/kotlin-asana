@@ -1,4 +1,4 @@
-package org.conservationco.asana.requests
+package org.conservationco.asana.extensions.events
 
 import com.google.gson.JsonElement
 

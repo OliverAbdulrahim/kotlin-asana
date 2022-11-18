@@ -1,4 +1,4 @@
-package org.conservationco.asana.requests
+package org.conservationco.asana.extensions
 
 import com.asana.models.Attachment
 import com.asana.models.ResultBodyCollection
@@ -6,6 +6,8 @@ import com.asana.requests.CollectionRequest
 import com.asana.requests.ItemRequest
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import org.conservationco.asana.extensions.events.Action
+import org.conservationco.asana.extensions.events.Event
 import org.conservationco.asana.util.appendAll
 import java.net.URL
 

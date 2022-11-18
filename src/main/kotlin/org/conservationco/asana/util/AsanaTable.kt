@@ -3,8 +3,8 @@ package org.conservationco.asana.util
 import com.asana.models.Project
 import com.asana.models.Task
 import org.conservationco.asana.asanaContext
-import org.conservationco.asana.requests.Action
-import org.conservationco.asana.requests.Event
+import org.conservationco.asana.extensions.events.Action
+import org.conservationco.asana.extensions.events.Event
 import org.conservationco.asana.serialization.AsanaSerializable
 import kotlin.reflect.KClass
 

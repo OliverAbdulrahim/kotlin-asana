@@ -2,8 +2,8 @@ package org.conservationco.asana.extensions
 
 import com.asana.models.*
 import org.conservationco.asana.AsanaConfig
-import org.conservationco.asana.requests.Action
-import org.conservationco.asana.requests.Event
+import org.conservationco.asana.extensions.events.Action
+import org.conservationco.asana.extensions.events.Event
 import org.conservationco.asana.serialization.AsanaSerializable
 import org.conservationco.asana.serialization.AsanaTaskSerializer
 import org.conservationco.asana.serialization.customfield.CustomFieldException
@@ -11,7 +11,6 @@ import org.conservationco.asana.serialization.customfield.context.CustomFieldCon
 import org.conservationco.asana.serialization.customfield.context.ProjectCustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.TaskCustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.WorkspaceCustomFieldContext
-import org.conservationco.asana.requests.RequestExecutor
 import kotlin.reflect.KClass
 
 /**
@@ -223,7 +222,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      * @see pollEventStream
      */
     fun Project.pollEventStreamLazy(vararg actions: Action): Set<Event> {
-        return requestExecutor.projects.getTaskEvents(this, *actions)
+        return requestExecutor.events.getTaskEvents(this, *actions)
     }
 
     /**

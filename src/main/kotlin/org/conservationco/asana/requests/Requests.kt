@@ -51,27 +51,30 @@ internal fun <T> collectPaginationsRaw(request: CollectionRequest<T>): ResultBod
     } else result
 }
 
-internal fun Collection<JsonElement>.extractTaskEvents(vararg actions: Action): Set<Event> {
+internal fun Collection<JsonElement>.extractTaskEvents(vararg actions: Action): Set<Event> =
+    extractResourceEvents("task", *actions)
+
+internal fun Collection<JsonElement>.extractResourceEvents(resourceType: String, vararg actions: Action): Set<Event> {
     if (this.isEmpty() || actions.isEmpty()) return emptySet()
 
-    val jsonActions = actions.map(Action::jsonName)
-    val taskEvents = HashSet<Event>()
+    val actionsAsJsonNames = actions.map(Action::jsonName)
+    val events = HashSet<Event>()
 
     for (element in this) {
         if (element !is JsonObject) continue
-        if (element["type"].asString != "task") continue
+        if (element["type"].asString != resourceType) continue
 
         val action = element["action"].asString
-        if (action in jsonActions) {
+        if (action in actionsAsJsonNames) {
             val changeTypeEnum = Action.fromString(action)
             val changeBody = element["change"] as JsonObject
-            val taskBody = element["resource"] as JsonObject
-            val taskGid = taskBody["gid"].asString
-            val packaged = Event(taskGid, changeTypeEnum, changeBody)
-            taskEvents.add(packaged)
+            val resourceBody = element["resource"] as JsonObject
+            val gid = resourceBody["gid"].asString
+            val packaged = Event(gid, changeTypeEnum, changeBody)
+            events.add(packaged)
         }
     }
-    return taskEvents
+    return events
 }
 
 internal fun transformToPermanentUrl(attachment: Attachment): Attachment = Attachment().apply {

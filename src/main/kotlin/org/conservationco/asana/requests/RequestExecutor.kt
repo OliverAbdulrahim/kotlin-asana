@@ -92,10 +92,10 @@ class RequestExecutor(
             return collectPaginations(request)
         }
 
-        fun getTaskEvents(project: Project, vararg actions: Action): Map<Action, Task> {
+        fun getTaskEvents(project: Project, vararg actions: Action): Set<Event> {
             return events
                 .getEventStreamPaginated(project)
-                .extractToTasks(*actions)
+                .extractTaskEvents(*actions)
         }
 
         fun getTaskCount(project: Project): Int {

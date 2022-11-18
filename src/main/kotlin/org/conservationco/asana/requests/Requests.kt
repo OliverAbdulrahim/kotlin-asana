@@ -2,7 +2,6 @@ package org.conservationco.asana.requests
 
 import com.asana.models.Attachment
 import com.asana.models.ResultBodyCollection
-import com.asana.models.Task
 import com.asana.requests.CollectionRequest
 import com.asana.requests.ItemRequest
 import com.google.gson.JsonElement
@@ -52,22 +51,27 @@ internal fun <T> collectPaginationsRaw(request: CollectionRequest<T>): ResultBod
     } else result
 }
 
-internal fun Collection<JsonElement>.extractToTasks(vararg actions: Action): Map<Action, Task> {
-    val actionsList = actions.map { it.name.lowercase() }
-    val gidsToTasks = HashMap<Action, Task>()
+internal fun Collection<JsonElement>.extractTaskEvents(vararg actions: Action): Set<Event> {
+    if (this.isEmpty() || actions.isEmpty()) return emptySet()
+
+    val jsonActions = actions.map(Action::jsonName)
+    val taskEvents = HashSet<Event>()
+
     for (element in this) {
         if (element !is JsonObject) continue
         if (element["type"].asString != "task") continue
 
         val action = element["action"].asString
-        if (action in actionsList) {
+        if (action in jsonActions) {
+            val changeTypeEnum = Action.fromString(action)
+            val changeBody = element["change"] as JsonObject
             val taskBody = element["resource"] as JsonObject
-            val gid = taskBody["gid"].asString
-            val actionEnum = Action.fromString(action)
-            gidsToTasks[actionEnum] = Task().apply { this.gid = gid }
+            val taskGid = taskBody["gid"].asString
+            val packaged = Event(taskGid, changeTypeEnum, changeBody)
+            taskEvents.add(packaged)
         }
     }
-    return gidsToTasks
+    return taskEvents
 }
 
 internal fun transformToPermanentUrl(attachment: Attachment): Attachment = Attachment().apply {

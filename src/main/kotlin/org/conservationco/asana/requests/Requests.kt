@@ -1,4 +1,4 @@
-package org.conservationco.asana.util
+package org.conservationco.asana.requests
 
 import com.asana.models.Attachment
 import com.asana.models.ResultBodyCollection
@@ -7,6 +7,7 @@ import com.asana.requests.CollectionRequest
 import com.asana.requests.ItemRequest
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import org.conservationco.asana.util.appendAll
 import java.net.URL
 
 internal fun <T> executeDataRequestWith(
@@ -51,20 +52,22 @@ internal fun <T> collectPaginationsRaw(request: CollectionRequest<T>): ResultBod
     } else result
 }
 
-internal fun Collection<JsonElement>.extractTasks(): Collection<Task> {
-    val gidsToTasks = HashMap<String, Task>()
+internal fun Collection<JsonElement>.extractToTasks(vararg actions: Action): Map<Action, Task> {
+    val actionsList = actions.map { it.name.lowercase() }
+    val gidsToTasks = HashMap<Action, Task>()
     for (element in this) {
         if (element !is JsonObject) continue
         if (element["type"].asString != "task") continue
-        if (element["action"].asString == "deleted") continue
 
-        val taskBody = element["resource"] as JsonObject
-        val gid = taskBody["gid"].asString
-        if (gidsToTasks.containsKey(gid)) continue
-
-        gidsToTasks[gid] = Task().apply { this.gid = gid }
+        val action = element["action"].asString
+        if (action in actionsList) {
+            val taskBody = element["resource"] as JsonObject
+            val gid = taskBody["gid"].asString
+            val actionEnum = Action.fromString(action)
+            gidsToTasks[actionEnum] = Task().apply { this.gid = gid }
+        }
     }
-    return gidsToTasks.values
+    return gidsToTasks
 }
 
 internal fun transformToPermanentUrl(attachment: Attachment): Attachment = Attachment().apply {

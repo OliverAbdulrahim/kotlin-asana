@@ -1,10 +1,11 @@
-package org.conservationco.asana.util
+package org.conservationco.asana.requests
 
 import com.asana.errors.InvalidTokenError
 import com.asana.models.*
 import com.google.gson.JsonElement
 import org.conservationco.asana.AsanaConfig
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
+import org.conservationco.asana.util.*
 import java.time.LocalDate
 
 /**
@@ -91,10 +92,10 @@ class RequestExecutor(
             return collectPaginations(request)
         }
 
-        fun getNewTasksPaginated(project: Project): Collection<Task> {
+        fun getTaskEvents(project: Project, vararg actions: Action): Map<Action, Task> {
             return events
                 .getEventStreamPaginated(project)
-                .extractTasks()
+                .extractToTasks(*actions)
         }
 
         fun getTaskCount(project: Project): Int {

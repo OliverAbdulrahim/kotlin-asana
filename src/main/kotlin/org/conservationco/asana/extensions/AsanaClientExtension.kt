@@ -2,6 +2,7 @@ package org.conservationco.asana.extensions
 
 import com.asana.models.*
 import org.conservationco.asana.AsanaConfig
+import org.conservationco.asana.requests.Action
 import org.conservationco.asana.serialization.AsanaSerializable
 import org.conservationco.asana.serialization.AsanaTaskSerializer
 import org.conservationco.asana.serialization.customfield.CustomFieldException
@@ -9,7 +10,7 @@ import org.conservationco.asana.serialization.customfield.context.CustomFieldCon
 import org.conservationco.asana.serialization.customfield.context.ProjectCustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.TaskCustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.WorkspaceCustomFieldContext
-import org.conservationco.asana.util.RequestExecutor
+import org.conservationco.asana.requests.RequestExecutor
 import kotlin.reflect.KClass
 
 /**
@@ -157,12 +158,70 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     }
 
     /**
-     * Returns a `List` of all the new tasks on this project.
+     * Returns a `List` of all the new tasks on this project, with or without attachments based on the
+     * [includeAttachments] flag.
+     *
+     * New tasks are those that were added since the last time this function was called. However, this is only reliable
+     * if calls are made more frequently than every 24 hours; this is due to a limitation of the Asana API.
+     * [For more details, please see this section of Asana's documentation](https://developers.asana.com/docs/events).
+     *
+     * Also, please note that this is an *expensive* function, as it calls the [get] extension function defined in this
+     * class on each new [Task]. Unless you really need the complete record of each task, use the [pollEventStreamLazy]
+     * function.
+     *
+     * @see pollEventStream
+     * @see pollEventStreamLazy
      */
     fun Project.getNewTasks(includeAttachments: Boolean = false): List<Task> {
-        return requestExecutor.projects
-            .getNewTasksPaginated(this)
-            .map { it.get(includeAttachments) }
+        return pollEventStream(includeAttachments, Action.ADDED)
+    }
+
+    /**
+     * Returns a `Set` containing the unique identifiers of all new tasks on this project.
+     *
+     * New tasks are those that were added since the last time this function was called. However, this is only reliable
+     * if calls are made more frequently than every 24 hours; this is due to a limitation of the Asana API.
+     * [For more details, please see this section of Asana's documentation](https://developers.asana.com/docs/events).
+     *
+     * @see pollEventStream
+     * @see pollEventStreamLazy
+     */
+    fun Project.getNewTasksLazy(): Set<String> {
+        return pollEventStreamLazy(Action.ADDED)
+            .asSequence()
+            .map { it.value.gid }
+            .toSet()
+    }
+
+    /**
+     * Polls this project for task events that match the given [actions], returning a `List` of tasks passing the
+     * filter, with or without attachments based on the [includeAttachments] flag.
+     *
+     * If a reliable data stream is needed, make calls to this function more frequently than every 24 hours.
+     * [For more details, please see this section of Asana's documentation](https://developers.asana.com/docs/events).
+     *
+     * Also, please note that this is an *expensive* function, as it calls the [get] extension function defined in this
+     * class on each new [Task]. Unless you really need the complete record of each task, use the [pollEventStreamLazy]
+     * function.
+     *
+     * @see pollEventStreamLazy
+     */
+    fun Project.pollEventStream(includeAttachments: Boolean = false, vararg actions: Action): List<Task> {
+        return pollEventStreamLazy(*actions)
+            .map { it.value.get(includeAttachments) }
+    }
+
+    /**
+     * Polls this project for task events that match the given [actions], returning a `Set` containing the unique
+     * identifiers of all tasks passing the filter.
+     *
+     * If a reliable data stream is needed, make calls to this function more frequently than every 24 hours.
+     * [For more details, please see this section of Asana's documentation](https://developers.asana.com/docs/events).
+     *
+     * @see pollEventStream
+     */
+    fun Project.pollEventStreamLazy(vararg actions: Action): Map<Action, Task> {
+        return requestExecutor.projects.getTaskEvents(this, *actions)
     }
 
     /**

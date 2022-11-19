@@ -9,11 +9,11 @@ import com.google.gson.JsonElement
  * [see the corresponding section of the Asana documentation](https://developers.asana.com/docs/get-events-on-a-resource)
  *
  * @property resourceGid The [com.asana.models.Resource] that this event occurred on.
- * @property changeType The type of change that occurred.
- * @property changeBody The JSON body containing what changed.
+ * @property type The type of change that occurred.
+ * @property eventBody The JSON body containing what changed.
  */
 data class Event(
     val resourceGid: String,
-    val changeType: Action,
-    val changeBody: JsonElement,
+    val type: Action,
+    val eventBody: JsonElement,
 )

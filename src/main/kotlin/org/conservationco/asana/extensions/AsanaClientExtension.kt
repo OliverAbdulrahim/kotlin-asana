@@ -2,7 +2,8 @@ package org.conservationco.asana.extensions
 
 import com.asana.models.*
 import org.conservationco.asana.AsanaConfig
-import org.conservationco.asana.requests.Action
+import org.conservationco.asana.extensions.events.Action
+import org.conservationco.asana.extensions.events.Event
 import org.conservationco.asana.serialization.AsanaSerializable
 import org.conservationco.asana.serialization.AsanaTaskSerializer
 import org.conservationco.asana.serialization.customfield.CustomFieldException
@@ -10,7 +11,6 @@ import org.conservationco.asana.serialization.customfield.context.CustomFieldCon
 import org.conservationco.asana.serialization.customfield.context.ProjectCustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.TaskCustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.WorkspaceCustomFieldContext
-import org.conservationco.asana.requests.RequestExecutor
 import kotlin.reflect.KClass
 
 /**
@@ -177,7 +177,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     }
 
     /**
-     * Returns a `Set` containing the unique identifiers of all new tasks on this project.
+     * Returns a `Set` of [Event] objects representing all new tasks on this project.
      *
      * New tasks are those that were added since the last time this function was called. However, this is only reliable
      * if calls are made more frequently than every 24 hours; this is due to a limitation of the Asana API.
@@ -186,11 +186,8 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      * @see pollEventStream
      * @see pollEventStreamLazy
      */
-    fun Project.getNewTasksLazy(): Set<String> {
+    fun Project.getNewTasksLazy(): Set<Event> {
         return pollEventStreamLazy(Action.ADDED)
-            .asSequence()
-            .map { it.value.gid }
-            .toSet()
     }
 
     /**
@@ -208,7 +205,11 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      */
     fun Project.pollEventStream(includeAttachments: Boolean = false, vararg actions: Action): List<Task> {
         return pollEventStreamLazy(*actions)
-            .map { it.value.get(includeAttachments) }
+            .asSequence()
+            .map(Event::resourceGid)
+            .map { task(it) }
+            .map { it.get(includeAttachments) }
+            .toList()
     }
 
     /**
@@ -220,8 +221,8 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      *
      * @see pollEventStream
      */
-    fun Project.pollEventStreamLazy(vararg actions: Action): Map<Action, Task> {
-        return requestExecutor.projects.getTaskEvents(this, *actions)
+    fun Project.pollEventStreamLazy(vararg actions: Action): Set<Event> {
+        return requestExecutor.events.getTaskEvents(this, *actions)
     }
 
     /**

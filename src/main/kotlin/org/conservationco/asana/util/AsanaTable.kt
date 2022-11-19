@@ -3,7 +3,8 @@ package org.conservationco.asana.util
 import com.asana.models.Project
 import com.asana.models.Task
 import org.conservationco.asana.asanaContext
-import org.conservationco.asana.requests.Action
+import org.conservationco.asana.extensions.events.Action
+import org.conservationco.asana.extensions.events.Event
 import org.conservationco.asana.serialization.AsanaSerializable
 import kotlin.reflect.KClass
 
@@ -70,14 +71,22 @@ class AsanaTable<T : AsanaSerializable<T>> @PublishedApi internal constructor(
     }
 
     /**
-     * Polls the event stream of the Asana project this table wraps, returning an `Iterable` result of deserializing all
-     * task events that pass filtering by the given [actions].
+     * Polls the event stream of the Asana project this table wraps, returning the `Iterable` result of deserializing
+     * all task events that match the given [actions].
      */
-    fun getRecentlyAdded(vararg actions: Action): Iterable<T> = asanaContext {
+    fun pollEvents(vararg actions: Action): Iterable<T> = asanaContext {
         project.run {
             val tasks = pollEventStream(includeAttachments, *actions)
             tasks.convertToListOf(destinationClass, this, deserializingFn)
         }
+    }
+
+    /**
+     * Polls the event stream of the Asana project this table wraps, returning a `Set` of [Event] objects representing
+     * each new change.
+     */
+    fun pollEventsLazy(vararg actions: Action): Set<Event> = asanaContext {
+        project.pollEventStreamLazy(*actions)
     }
 
 // UPDATE functions

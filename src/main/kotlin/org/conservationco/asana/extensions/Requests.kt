@@ -1,12 +1,13 @@
-package org.conservationco.asana.requests
+package org.conservationco.asana.extensions
 
 import com.asana.models.Attachment
 import com.asana.models.ResultBodyCollection
-import com.asana.models.Task
 import com.asana.requests.CollectionRequest
 import com.asana.requests.ItemRequest
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import org.conservationco.asana.extensions.events.Action
+import org.conservationco.asana.extensions.events.Event
 import org.conservationco.asana.util.appendAll
 import java.net.URL
 
@@ -52,22 +53,30 @@ internal fun <T> collectPaginationsRaw(request: CollectionRequest<T>): ResultBod
     } else result
 }
 
-internal fun Collection<JsonElement>.extractToTasks(vararg actions: Action): Map<Action, Task> {
-    val actionsList = actions.map { it.name.lowercase() }
-    val gidsToTasks = HashMap<Action, Task>()
+internal fun Collection<JsonElement>.extractTaskEvents(vararg actions: Action): Set<Event> =
+    extractResourceEvents("task", *actions)
+
+internal fun Collection<JsonElement>.extractResourceEvents(resourceType: String, vararg actions: Action): Set<Event> {
+    if (this.isEmpty() || actions.isEmpty()) return emptySet()
+
+    val actionsAsJsonNames = actions.map(Action::jsonName)
+    val events = HashSet<Event>()
+
     for (element in this) {
         if (element !is JsonObject) continue
-        if (element["type"].asString != "task") continue
+        if (element["type"].asString != resourceType) continue
 
         val action = element["action"].asString
-        if (action in actionsList) {
-            val taskBody = element["resource"] as JsonObject
-            val gid = taskBody["gid"].asString
-            val actionEnum = Action.fromString(action)
-            gidsToTasks[actionEnum] = Task().apply { this.gid = gid }
+        if (action in actionsAsJsonNames) {
+            val changeTypeEnum = Action.fromString(action)
+            val changeBody = element["change"] as JsonObject
+            val resourceBody = element["resource"] as JsonObject
+            val gid = resourceBody["gid"].asString
+            val packaged = Event(gid, changeTypeEnum, changeBody)
+            events.add(packaged)
         }
     }
-    return gidsToTasks
+    return events
 }
 
 internal fun transformToPermanentUrl(attachment: Attachment): Attachment = Attachment().apply {

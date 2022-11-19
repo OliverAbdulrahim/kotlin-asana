@@ -1,4 +1,4 @@
-package org.conservationco.asana.requests
+package org.conservationco.asana.extensions.events
 
 /**
  * Enumeration for all Asana actions that trigger webhooks and event streams. For more information,

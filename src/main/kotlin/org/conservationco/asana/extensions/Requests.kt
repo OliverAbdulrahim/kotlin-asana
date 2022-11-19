@@ -69,10 +69,9 @@ internal fun Collection<JsonElement>.extractResourceEvents(resourceType: String,
         val action = element["action"].asString
         if (action in actionsAsJsonNames) {
             val changeTypeEnum = Action.fromString(action)
-            val changeBody = element["change"] as JsonObject
             val resourceBody = element["resource"] as JsonObject
             val gid = resourceBody["gid"].asString
-            val packaged = Event(gid, changeTypeEnum, changeBody)
+            val packaged = Event(gid, changeTypeEnum, element)
             events.add(packaged)
         }
     }

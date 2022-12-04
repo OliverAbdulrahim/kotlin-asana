@@ -3,6 +3,7 @@ package org.conservationco.asana.extensions.workpsaces
 import com.asana.models.*
 import org.conservationco.asana.AsanaConfig
 import org.conservationco.asana.extensions.collectPaginations
+import org.conservationco.asana.extensions.executeCollectionRequestWith
 import org.conservationco.asana.extensions.executeQueryRequestWith
 
 /**
@@ -16,13 +17,10 @@ class Workspaces(
 
     fun searchWorkspacePaginated(
         workspace: Workspace,
-        textQuery: String,
-        vararg projectGids: String
+        filters: Array<out Pair<String, Any>>,
     ): List<Task> {
         val request = client.tasks.searchInWorkspace(workspace.gid);
-        request.query["projects="] = projectGids.joinToString(separator = ",")
-        request.query["text="] = textQuery
-        return collectPaginations(request)
+        return executeCollectionRequestWith(request, filters)
     }
 
     fun getProjectsPaginated(workspace: Workspace, includeArchived: Boolean): Collection<Project> {

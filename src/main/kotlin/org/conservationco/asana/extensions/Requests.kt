@@ -27,6 +27,14 @@ internal fun <T> executeQueryRequestWith(
     return request.execute()
 }
 
+internal fun <T> executeCollectionRequestWith(
+    request: CollectionRequest<T>,
+    filters: Array<out Pair<String, Any>>
+): List<T> {
+    request.query.appendAll(filters)
+    return collectPaginations(request)
+}
+
 internal fun <T> executeWithQueriesAndPaginate(
     request: CollectionRequest<T>,
     expanded: Boolean,

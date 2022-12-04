@@ -235,18 +235,23 @@ class AsanaClientExtension(private val config: AsanaConfig) {
 // Workspace extension functions
 
     /**
-     * Returns the result of applying the given search [textQuery] to this workspace, optionally limiting to the given
-     * projects by identifier ([projectGids]).
+     * Searches the receiving `Workspace`, returning a list of compact tasks that match the given filters.
      *
-     * Tasks returned by this function have the fields supplied by this [AsanaClientExtension]'s `config.fields`
-     * setting.
+     * Supported parameters [are outlined at this link](https://developers.asana.com/docs/search-tasks-in-a-workspace).
+     * Below is an example call:
      *
-     * @see AsanaConfig.fields
-     * @see AsanaConfig.expandedResponses Overrides `fields` supplied to return all data associated with each task
-     *                                    (not recommended – only for debugging purposes)
+     * ```kotlin
+     * val result: List<Task> = asanaContext {
+     *     workspace("54321").search(
+     *         "text" to "Hello World!",
+     *         "created_at.after" to LocalDate.now(),
+     *         "projects.any" to "12345"
+     *     )
+     * }
+     * ```
      */
-    fun Workspace.search(textQuery: String, vararg projectGids: String = arrayOf("")): List<Task> {
-        return requestExecutor.workspaces.searchWorkspacePaginated(this, textQuery, *projectGids)
+    fun Workspace.search(vararg filters: Pair<String, Any>): List<Task> {
+        return requestExecutor.workspaces.searchWorkspacePaginated(this, filters)
     }
 
     /**

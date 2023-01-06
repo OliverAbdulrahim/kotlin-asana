@@ -303,6 +303,25 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      */
     inline fun <R> workspace(workspaceGid: String, block: Workspace.() -> R): R = workspace(workspaceGid).block()
 
+// Workspace extension functions
+
+    /**
+     * Returns an Asana [Portfolio] with the given [portfolio] (globally unique identifier).
+     */
+    fun portfolio(portfolio: String): Portfolio = Portfolio().initResource(portfolio)
+
+    /**
+     * Returns the result of calling the given [block] on an Asana [Portfolio] with the given [portfolioGid].
+     */
+    inline fun <R> portfolio(portfolioGid: String, block: Portfolio.() -> R): R = portfolio(portfolioGid).block()
+
+    /**
+     * Returns all items contained within the receiver [Portfolio].
+     */
+    fun Portfolio.getItems(): List<Project> {
+        return requestExecutor.portfolios.getItemsPaginated(this)
+    }
+
 // Type conversion functions
 
     /**

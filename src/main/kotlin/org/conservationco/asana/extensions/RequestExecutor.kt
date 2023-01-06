@@ -2,6 +2,7 @@ package org.conservationco.asana.extensions
 
 import org.conservationco.asana.AsanaConfig
 import org.conservationco.asana.extensions.events.Events
+import org.conservationco.asana.extensions.portfolios.Portfolios
 import org.conservationco.asana.extensions.projects.Projects
 import org.conservationco.asana.extensions.tasks.Tasks
 import org.conservationco.asana.extensions.workpsaces.Workspaces
@@ -20,5 +21,6 @@ class RequestExecutor(
     val projects = Projects(config)
     val workspaces = Workspaces(config)
     val events = Events(config)
+    val portfolios = Portfolios(config)
 
 }

@@ -2,8 +2,8 @@ package org.conservationco.asana.serialization
 
 import com.asana.models.CustomField
 import com.asana.models.Task
-import org.conservationco.asana.serialization.customfield.CustomFieldException
 import org.conservationco.asana.serialization.customfield.AsanaCustomField
+import org.conservationco.asana.serialization.customfield.CustomFieldException
 import org.conservationco.asana.serialization.customfield.CustomFieldTransferStrategy
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.NoOpCustomFieldContext

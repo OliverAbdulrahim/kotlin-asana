@@ -3,7 +3,6 @@ package org.conservationco.asana.serialization
 import com.asana.models.CustomField
 import com.asana.models.Task
 import org.conservationco.asana.serialization.stubs.*
-import org.conservationco.asana.serialization.stubs.PersonCustomFieldContextStub
 import org.conservationco.asana.serialization.stubs.PersonCustomFields.noOpGid
 import org.conservationco.asana.serialization.stubs.PersonCustomFields.personEnumCustomField
 import org.conservationco.asana.serialization.stubs.PersonCustomFields.personMultiEnumField

@@ -3,7 +3,6 @@ package org.conservationco.asana.extensions.portfolios
 import com.asana.models.Portfolio
 import com.asana.models.Project
 import org.conservationco.asana.AsanaConfig
-import org.conservationco.asana.asanaContext
 import org.conservationco.asana.extensions.collectPaginations
 
 /**

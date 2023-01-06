@@ -1,9 +1,6 @@
 package org.conservationco.asana.serialization.customfield
 
-import org.conservationco.asana.serialization.customfield.AsanaCustomField
-import org.conservationco.asana.serialization.customfield.CustomFieldTransferStrategy
 import org.conservationco.asana.serialization.stubs.TestTransferClasses.*
-import org.conservationco.asana.serialization.stubs.TestTransferClasses.ClassWithNoSerializableProperties
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation

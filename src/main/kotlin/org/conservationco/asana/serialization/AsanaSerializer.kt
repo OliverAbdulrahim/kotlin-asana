@@ -1,8 +1,8 @@
 package org.conservationco.asana.serialization
 
+import com.asana.models.Project
 import com.asana.models.Resource
 import com.asana.models.Task
-import com.asana.models.Project
 
 /**
  * Interface for classes that (de)serialize Asana resources.

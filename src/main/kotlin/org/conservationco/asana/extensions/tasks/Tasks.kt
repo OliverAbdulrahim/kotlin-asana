@@ -6,7 +6,6 @@ import com.asana.models.Task
 import org.conservationco.asana.AsanaConfig
 import org.conservationco.asana.extensions.executeDataRequestWith
 import org.conservationco.asana.extensions.executeWithQueriesAndPaginate
-import org.conservationco.asana.extensions.transformToPermanentUrl
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
 import org.conservationco.asana.util.mapToGids
 import org.conservationco.asana.util.toGidArray
@@ -45,8 +44,7 @@ class Tasks(
 
     fun getAttachment(task: Task): Collection<Attachment> {
         val request = client.attachments.getAttachmentsForObject(task.gid)
-        return executeWithQueriesAndPaginate(request, config.expandedResponses, config.fields)
-            .map(::transformToPermanentUrl)
+        return executeWithQueriesAndPaginate(request, true, config.fields)
     }
 
     fun createAttachment(task: Task, attachment: Attachment): Attachment {

@@ -1,6 +1,5 @@
 package org.conservationco.asana.extensions
 
-import com.asana.models.Attachment
 import com.asana.models.ResultBodyCollection
 import com.asana.requests.CollectionRequest
 import com.asana.requests.ItemRequest
@@ -9,7 +8,6 @@ import com.google.gson.JsonObject
 import org.conservationco.asana.extensions.events.Action
 import org.conservationco.asana.extensions.events.Event
 import org.conservationco.asana.util.appendAll
-import java.net.URL
 
 internal fun <T> executeDataRequestWith(
     request: ItemRequest<T>,
@@ -84,11 +82,4 @@ internal fun Collection<JsonElement>.extractResourceEvents(resourceType: String,
         events.add(packaged)
     }
     return events
-}
-
-internal fun transformToPermanentUrl(attachment: Attachment): Attachment = Attachment().apply {
-    gid = attachment.gid
-    name = attachment.name
-    parent = attachment.parent
-    downloadUrl = URL("https://app.asana.com/app/asana/-/get_asset?asset_id=${attachment.gid}")
 }

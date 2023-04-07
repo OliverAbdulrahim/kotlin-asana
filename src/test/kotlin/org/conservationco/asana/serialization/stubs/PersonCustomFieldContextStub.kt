@@ -33,4 +33,5 @@ internal object PersonCustomFields {
     internal fun personTextCustomField() = customFieldOf("Favorite dessert", "text")
     internal fun personEnumCustomField() = customFieldOf("Favorite season", "enum", seasons)
     internal fun personMultiEnumField() = customFieldOf("Languages spoken", "multi_enum", languages)
+    internal fun optionalCustomField() = customFieldOf("Optional field", "text")
 }

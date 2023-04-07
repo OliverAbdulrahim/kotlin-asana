@@ -4,7 +4,7 @@ import com.asana.models.Attachment
 import org.conservationco.asana.serialization.AsanaSerializable
 import org.conservationco.asana.serialization.customfield.AsanaCustomField
 
-class Person(
+internal class Person(
     var id: String = "",
     var name: String = "",
     var documents: Collection<Attachment> = emptyList(),

@@ -2,7 +2,7 @@ package org.conservationco.asana.extensions
 
 import com.asana.models.*
 import org.conservationco.asana.AsanaConfig
-import org.conservationco.asana.exceptions.CustomFieldException
+import org.conservationco.asana.exception.CustomFieldException
 import org.conservationco.asana.extensions.events.Action
 import org.conservationco.asana.extensions.events.Event
 import org.conservationco.asana.serialization.AsanaSerializable
@@ -11,6 +11,7 @@ import org.conservationco.asana.serialization.customfield.context.CustomFieldCon
 import org.conservationco.asana.serialization.customfield.context.ProjectCustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.TaskCustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.WorkspaceCustomFieldContext
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 
 /**
@@ -23,7 +24,7 @@ import kotlin.reflect.KClass
 class AsanaClientExtension(private val config: AsanaConfig) {
 
     private val requestExecutor = RequestExecutor(config)
-    private val contexts: MutableMap<String, CustomFieldContext> = HashMap()
+    private val contexts: MutableMap<String, CustomFieldContext> = ConcurrentHashMap()
 
 // Task extension functions
 

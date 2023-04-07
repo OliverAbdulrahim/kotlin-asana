@@ -2,7 +2,7 @@ package org.conservationco.asana.serialization
 
 import com.asana.models.CustomField
 import com.asana.models.Task
-import org.conservationco.asana.exceptions.CustomFieldException
+import org.conservationco.asana.exception.CustomFieldException
 import org.conservationco.asana.serialization.customfield.AsanaCustomField
 import org.conservationco.asana.serialization.customfield.CustomFieldTransferStrategy
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext

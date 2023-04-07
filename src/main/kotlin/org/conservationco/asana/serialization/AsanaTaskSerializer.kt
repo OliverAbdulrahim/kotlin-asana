@@ -2,8 +2,8 @@ package org.conservationco.asana.serialization
 
 import com.asana.models.CustomField
 import com.asana.models.Task
+import org.conservationco.asana.exceptions.CustomFieldException
 import org.conservationco.asana.serialization.customfield.AsanaCustomField
-import org.conservationco.asana.serialization.customfield.CustomFieldException
 import org.conservationco.asana.serialization.customfield.CustomFieldTransferStrategy
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.NoOpCustomFieldContext
@@ -77,7 +77,7 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
      * [AsanaTaskSerializer]'s custom field [context].
      */
     private fun T.convertPropertiesToCustomFields(): List<CustomField> {
-        return strategy.properties.entries.map { entry -> this.buildCustomFieldFrom(entry.key, entry.value) }
+        return strategy.properties.entries.mapNotNull { entry -> this.buildCustomFieldFrom(entry.key, entry.value) }
     }
 
     /**
@@ -88,13 +88,16 @@ class AsanaTaskSerializer<T : AsanaSerializable<T>>(
      * @throws CustomFieldException If no custom field in this object's [context] matches the name supplied in the
      *                              given property's [AsanaCustomField] annotation declaration.
      */
-    private fun T.buildCustomFieldFrom(propertyName: String, property: KProperty1<out Any, *>): CustomField {
-        val customField = context[propertyName] ?: throw CustomFieldException(
-            "No custom field in $context\n\tmatches name=$property"
-        )
-        val value = property.getter.call(this)
-        customField.asResourceSubtype(context).applyDataTo(customField, value)
-        return customField
+    private fun T.buildCustomFieldFrom(propertyName: String, property: KProperty1<out Any, *>): CustomField? {
+        val customField = context[propertyName]
+        return if (customField != null) {
+            val value = property.getter.call(this)
+            customField.asResourceSubtype(context).applyDataTo(customField, value)
+            customField
+        } else {
+            if (strategy.isOptional(propertyName)) null // skip over optional fields, throw for required fields
+            else throw CustomFieldException("No custom field in $context\n\tmatches name=$property")
+        }
     }
 
 }

@@ -1,3 +1,3 @@
-package org.conservationco.asana.serialization.customfield
+package org.conservationco.asana.exception
 
 class CustomFieldException(message: String) : IllegalArgumentException(message)

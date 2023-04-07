@@ -1,3 +1,3 @@
-package org.conservationco.asana.exceptions
+package org.conservationco.asana.exception
 
 class NoSuppliedAccessTokenException(message: String = "") : RuntimeException(message)

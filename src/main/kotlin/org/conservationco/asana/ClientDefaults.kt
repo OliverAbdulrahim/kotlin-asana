@@ -1,7 +1,7 @@
 package org.conservationco.asana
 
 import com.asana.Client
-import org.conservationco.asana.exceptions.NoSuppliedAccessTokenException
+import org.conservationco.asana.exception.NoSuppliedAccessTokenException
 import org.conservationco.asana.extensions.AsanaClientExtension
 
 object ClientDefaults {

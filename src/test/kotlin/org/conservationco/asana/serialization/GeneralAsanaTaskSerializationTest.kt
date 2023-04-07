@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
-internal class AsanaTaskSerializerTest {
+internal class GeneralAsanaTaskSerializationTest {
 
     private val underTest = AsanaTaskSerializer(Person::class, PersonCustomFieldContextStub())
 

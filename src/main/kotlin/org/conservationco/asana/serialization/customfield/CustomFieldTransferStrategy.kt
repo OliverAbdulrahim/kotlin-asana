@@ -16,6 +16,8 @@ class CustomFieldTransferStrategy(
         return properties[name]
     }
 
+    fun isOptional(name: String): Boolean = properties[name]?.getCustomFieldAnnotation()?.isOptional!!
+
     private fun serializableCustomFieldProperties(kClass: KClass<*>): Map<String, KProperty1<out Any, *>> {
         return kClass.memberProperties.associateByNotNull( { it.getCustomFieldAnnotation()?.name }, { it } )
     }

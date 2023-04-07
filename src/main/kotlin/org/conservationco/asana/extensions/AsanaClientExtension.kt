@@ -2,11 +2,11 @@ package org.conservationco.asana.extensions
 
 import com.asana.models.*
 import org.conservationco.asana.AsanaConfig
+import org.conservationco.asana.exceptions.CustomFieldException
 import org.conservationco.asana.extensions.events.Action
 import org.conservationco.asana.extensions.events.Event
 import org.conservationco.asana.serialization.AsanaSerializable
 import org.conservationco.asana.serialization.AsanaTaskSerializer
-import org.conservationco.asana.serialization.customfield.CustomFieldException
 import org.conservationco.asana.serialization.customfield.context.CustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.ProjectCustomFieldContext
 import org.conservationco.asana.serialization.customfield.context.TaskCustomFieldContext

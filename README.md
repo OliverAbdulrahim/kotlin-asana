@@ -1,10 +1,15 @@
 # Welcome to `kotlin-asana`!
+
+
 This repository is home to a library for Asana written in Kotlin, which implements task ⇔️ object serialization, a DSL 
 for working with resources, auto pagination handling, and more! 
 
 `kotlin-asana` is aimed at extending the client's functionality with simple, declarative, and fun to use calls! 
 Essentially, this library saves you from spending lots of time crafting API calls, so you can focus on your business 
-logic. Read on to learn more and find examples. 
+logic. Read on to learn more and find examples.
+
+## Documentation
+**[📚 For library documentation, please click here.](https://oliverabdulrahim.github.io/kotlin-asana/)**
 
 ## Jump to a section
 1. [Overview of features](#overview-of-features)
@@ -34,7 +39,7 @@ logic. Read on to learn more and find examples.
 5. Enforces best practices for handling your access token.
 
 ## Installation (with Maven)
-Deployment of this project to Maven central coming soon. For now, use JitPack.
+Deployment of this project to Maven central coming soon™️️. For now, use [JitPack](https://jitpack.io/).
 ### Add this project as a dependency
 Include this git repository into your project's `pom.xml` with the following dependency:
 
@@ -45,7 +50,7 @@ Include this git repository into your project's `pom.xml` with the following dep
 </dependency>
 ```
 ### Add JitPack as a repository
-You'll also want to make sure that you have the [JitPack](https://jitpack.io/) repository:
+You'll also want to make sure that you have the JitPack repository:
 ```xml
 <repository>
    <id>jitpack.io</id>

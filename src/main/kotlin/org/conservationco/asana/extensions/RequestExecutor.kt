@@ -5,6 +5,7 @@ import org.conservationco.asana.extensions.events.Events
 import org.conservationco.asana.extensions.portfolios.Portfolios
 import org.conservationco.asana.extensions.projects.Projects
 import org.conservationco.asana.extensions.tasks.Tasks
+import org.conservationco.asana.extensions.webhooks.Webhooks
 import org.conservationco.asana.extensions.workpsaces.Workspaces
 
 /**
@@ -22,5 +23,6 @@ class RequestExecutor(
     val workspaces = Workspaces(config)
     val events = Events(config)
     val portfolios = Portfolios(config)
+    val webhooks = Webhooks(config)
 
 }

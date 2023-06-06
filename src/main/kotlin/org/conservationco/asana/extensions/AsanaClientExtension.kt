@@ -26,6 +26,39 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     private val requestExecutor = RequestExecutor(config)
     private val contexts: MutableMap<String, CustomFieldContext> = ConcurrentHashMap()
 
+// Webhook extension functions
+
+    /**
+     * Creates a webhook on the given Asana [resourceGid]. This webhook which will send the initial handshake request
+     * and future POST requests to the specified [targetUrl].
+     */
+    fun createWebhook(resourceGid: String, targetUrl: String) =
+        requestExecutor.webhooks.createWebhook(resourceGid, targetUrl)
+
+    /**
+     * Deletes the webhook at the given [webhookGid].
+     */
+    fun deleteWehbook(webhookGid: String) =
+        requestExecutor.webhooks.deleteWebhook(webhookGid)
+
+    /**
+     * Deletes all the webhooks on the given Asana [resourceGid] within the specified [workspaceGid].
+     */
+    fun deleteWebhooks(resourceGid: String, workspaceGid: String) =
+        requestExecutor.webhooks.deleteWebhooks(resourceGid, workspaceGid)
+
+    /**
+     * Returns the complete record of the given Asana [webhookGid].
+     */
+    fun getWebhook(webhookGid: String) =
+        requestExecutor.webhooks.getWebhook(webhookGid)
+
+    /**
+     * Returns all webhooks on the given Asana [resourceGid] within the specified [workspaceGid].
+     */
+    fun getWebhooks(resourceGid: String, workspaceGid: String) =
+        requestExecutor.webhooks.getWebhooks(resourceGid, workspaceGid)
+
 // Task extension functions
 
     /**
@@ -331,7 +364,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      */
     fun <R : AsanaSerializable<R>> Task.convertTo(
         toClass: KClass<out R>,
-        runAfterConverting: (source: Task, destination: R) -> Unit = {_, _ -> }
+        runAfterConverting: (source: Task, destination: R) -> Unit = { _, _ -> }
     ): R {
         checkConfigFieldsForSerializing()
         return AsanaTaskSerializer(toClass, getContextFor(this))
@@ -354,7 +387,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      */
     fun <R : AsanaSerializable<R>> R.convertToTask(
         context: Resource,
-        runAfterConverting: (source: R, destination: Task) -> Unit = {_, _ -> }
+        runAfterConverting: (source: R, destination: Task) -> Unit = { _, _ -> }
     ): Task {
         checkConfigFieldsForSerializing()
         return AsanaTaskSerializer(this::class, getContextFor(context))
@@ -375,7 +408,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     fun <R : AsanaSerializable<R>> Project.convertTasksToListOf(
         toClass: KClass<out R>,
         includeAttachments: Boolean = false,
-        runAfterConverting: (source: Task, destination: R) -> Unit = {_, _ -> }
+        runAfterConverting: (source: Task, destination: R) -> Unit = { _, _ -> }
     ): List<R> {
         checkConfigFieldsForSerializing()
         return this
@@ -399,7 +432,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      */
     fun <R : AsanaSerializable<R>> List<R>.convertToTaskList(
         context: Resource,
-        runAfterConverting: (source: R, destination: Task) -> Unit = {_, _ -> }
+        runAfterConverting: (source: R, destination: Task) -> Unit = { _, _ -> }
     ): List<Task> {
         checkConfigFieldsForSerializing()
         if (isEmpty()) return emptyList()
@@ -415,7 +448,7 @@ class AsanaClientExtension(private val config: AsanaConfig) {
     fun <R : AsanaSerializable<R>> List<Task>.convertToListOf(
         toClass: KClass<out R>,
         resource: Resource,
-        runAfterConverting: (source: Task, destination: R) -> Unit = {_, _ -> }
+        runAfterConverting: (source: Task, destination: R) -> Unit = { _, _ -> }
     ): List<R> {
         if (isEmpty()) return emptyList()
         val converter = AsanaTaskSerializer(toClass, getContextFor(resource))
@@ -435,13 +468,15 @@ class AsanaClientExtension(private val config: AsanaConfig) {
         if (existingContext != null) return existingContext
 
         val newContext = when (resource) {
-            is Task      -> TaskCustomFieldContext(resource)
-            is Project   -> ProjectCustomFieldContext(resource, this)
+            is Task -> TaskCustomFieldContext(resource)
+            is Project -> ProjectCustomFieldContext(resource, this)
             is Workspace -> WorkspaceCustomFieldContext(resource, this)
-            else         -> throw CustomFieldException("""
+            else -> throw CustomFieldException(
+                """
                 The given resource [$resource] cannot be used to serialize tasks and data objects.
                 You may only supply Task, Project, or Workspace objects.
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
         contexts[resource.gid] = newContext
 
@@ -457,14 +492,16 @@ class AsanaClientExtension(private val config: AsanaConfig) {
      * Guard against (de)serialization attempts when `custom_fields` option is not supplied.
      */
     private fun checkConfigFieldsForSerializing() {
-        if ("custom_fields" !in config.fields) throw CustomFieldException("""
+        if ("custom_fields" !in config.fields) throw CustomFieldException(
+            """
             
             Cannot serialize with the specified: AsanaConfig.fields=${config.fields.contentToString()}
             
             Hint: if you're serializing a data object into tasks (or vice-versa), you must specify at least the 
             "custom_fields" option when constructing your AsanaConfig object.
             
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     /**
